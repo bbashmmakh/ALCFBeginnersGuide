@@ -1,17 +1,90 @@
-# Profiling with NVIDIA Nsight tools
+# Profiling on Aurora
+
+On Aurora, several profiling tools from Intel and HPC communities are available to help users profile and optimize their application performance. 
+Each tool provides different spectrum of profiling features, and simple examples with the tools are provided in this session.  
+
+
+### Users are assumed to know:
+* Compilation of codes for Intel Data Center GPU Max cards
+* Running the codes on Aurora compute nodes
+
+### Learning Goals:
+* How to run iprof, VTune, Advisor and APS profilers with your applications on Aurora
+* Analyzing results produced on Aurora
+
+## Common part on Aurora
+Build your application for Aurora, and then submit your job script to Aurora or start an interactive job mode on Aurora as follows:  
+```
+$ qsub -I -l select=1 -l walltime=1:00:00 -l filesystems=home:flare -q debug -A <project-name>
+
+$ module load oneapi pti-gpu thapi
+$ module li
+
+CCurrently Loaded Modules:
+  1) libfabric/1.20.1                     21) berkeley-db/18.1.40-2frw2z6
+  2) cray-pals/1.4.0                      22) gdbm/1.23
+  3) cray-libpals/1.4.0                   23) perl/5.38.0
+  4) gcc-runtime/12.2.0-267awrk           24) libmd/1.0.4-nvn3prd
+  5) gmp/6.2.1-yctcuid                    25) libbsd/0.12.1-dsshygz
+  6) mpfr/4.2.1-fhgnwe7                   26) expat/2.6.2-s3fkrly
+  7) mpc/1.3.1-ygprpb4                    27) python/3.10.13
+  8) gcc/12.2.0                           28) glib/2.78.3-hokd4eq
+  9) oneapi/eng-compiler/2024.07.30.002   29) babeltrace2/2.0.6
+ 10) hwloc/master-git.1793e43-level-zero  30) lttng-tools/2.12.11
+ 11) yaksa/0.3-aw2kkvy                    31) abseil-cpp/20240116.2-cihlltz
+ 12) mpich/opt/4.3.0rc3                   32) protobuf/3.27.1
+ 13) pti-gpu/d3639de                      33) ruby/3.1.0-nph2ga5
+ 14) lz4/1.9.4                            34) ruby-ffi/1.15.4-6tewubh
+ 15) libarchive/3.7.1-fvef5p2             35) ruby-babeltrace2/0.1.4-7j5zmu7
+ 16) libiconv/1.17-kg7cda7                36) ruby-narray-old/0.6.1.2-mne4j5m
+ 17) libmicrohttpd/0.9.50-jjjslhm         37) ruby-narray-ffi/1.4.4-2xfqkda
+ 18) sqlite/3.43.2-2onu5lp                38) ruby-opencl/1.3.12-fiwkypq
+ 19) elfutils/0.186-yuor73r               39) thapi/git.f3a65b7-serial
+ 20) pcre2/10.43-vzzidje
+
+$ iprof --version
+v0.0.11-106-gf3a65b7
+
+$ unitrace --version
+2.1.1 (d3639def1f49364ca610306c07d423e803113210)
+
+$ vtune --version
+Intel(R) VTune(TM) Profiler 2024.2.1 (build 628577) Command Line Tool
+Copyright (C) 2009 Intel Corporation. All rights reserved.
+
+$ advisor --version
+Intel(R) Advisor 2024.2.1 (build 615624) Command Line Tool
+Copyright (C) 2009-2024 Intel Corporation. All rights reserved.
+
+$ aps --version
+Intel(R) VTune(TM) Profiler 2024.2.1 (build 628577) Command Line Tool
+Copyright (C) 2009 Intel Corporation. All rights reserved.
+
+```
+
+## Lightweight tracing with iprof/THAPI
+
+
+
+## Unified tracing and profiling with Intel unitrace 
+
+
+
+## In-depth profiling with Intel VTune
+
+
+
+## Kernel-level roofline analyses with Intel Advisor
+
+
+
+## Profiling at scale with Intel APS
 
 NVIDIA® Nsight™ Systems provides developers a system-wide visualization of an applications performance. Developers can optimize bottlenecks to scale efficiently across any number or size of CPUs and GPUs on Polaris. For further optimizations to compute kernels developers should use Nsight Compute.
 
 The NVIDIA Nsight Compute is an interactive kernel profiler for CUDA applications. It provides detailed performance metrics and API debugging via a user interface and command line tool.
 
 In addition, the baseline feature of this tool allows users to compare results within the tool. NVIDIA Nsight Compute provides a customizable and data-driven user interface, metric collection, and can be extended with analysis scripts for post-processing results.
-
-### Users are assumed to know:
-* basic usage of NVidia NSight System and Compute profilers
-### Learning Goals:
-* How to run NVidia profilers on Polaris
-* Installing NVidia profilers on your local machine
-* Viewing results produced on Polaris on your local machine
 
 
 ## Step-by-step guide
