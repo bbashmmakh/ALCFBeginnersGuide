@@ -103,8 +103,49 @@ $ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh vtune -collect gpu-hotsp
 ```
 
 
+### VTune server for pre-collected results on Aurora via SSH terminal
+VTune Profiler in a web server mode is useful to access collected results on Aurora without installing VTune Profiler on every client system. 
 
-#### VTune server for pre-collected results on Aurora via SSH terminal
+#### Instruction to use VTune web server mode
+
+Step 1: Add the following lines to `.ssh/config`  on your local system
+
+```
+host *.alcf.anl.gov
+  ControlMaster auto
+  ControlPath ~/.ssh/ssh_mux_%h_%p_%r
+```
+
+
+Step 2: Open a new terminal and log into an Aurora login node (no X11 forwarding required)
+
+```
+$ ssh <username>@login.aurora.alcf.anl.gov
+```
+
+Step 3: Start VTune server on an Aurora login node after loading `oneapi` module and setting corresponding environmental variables for VTune
+
+```
+$ module load oneapi
+$ vtune-backend --data-directory=<location of precollected VTune results>
+```
+Step 4: Open a new terminal with SSH port forwarding enabled
+
+```
+$ ssh -L 127.0.0.1:<port printed by vtune-backend>:127.0.0.1:<port printed by vtune-backend> <username>@login.aurora.alcf.anl.gov
+```
+
+<!-- Step 4: Check if the login nodes of Step 2 and Step 3 are the same or not. If not (e.g., aurora-uan-0009 from Step 2 and aurora-uan-0010 from Step 3), do ssh on the terminal for Step 3 to the login node of Step 2
+
+```
+$ ssh -L 127.0.0.1:<port printed by vtune-backend>:127.0.0.1:<port printed by vtune-backend> aurora-uan-xxxx
+```
+ -->
+Step 5: Open the URL printed by VTune server in firefox web browser on your local computer. For a security warning, click "Advanced..." and then "Accept the Risk and Continue".
+
+* Accept VTune server certificate: When you open VTune GUI, your web browser will complain about VTune self-signed certificate. You either need to tell web browser to proceed or install VTune server certificate on you client machine so that browser trusts it. To install the certificate note the path to the public part of the certificate printed by VTune server in the output, copy it to you client machine and add to the trusted certificates.
+
+* Set the passphrase: When you run the server for the first time the URL that it outputs contains a one-time-token. When you open such URL in the browser VTune server prompts you to set a passphrase. Other users can't access your VTune server without knowing this passphrase. The hash of the passphase will be persisted on the server. Also, a secure HTTP cookie will be stored in your browser so that you do not need to enter the passphrase each time you open VTune GUI.
 
 
 
@@ -112,18 +153,79 @@ $ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh vtune -collect gpu-hotsp
 
 ## Kernel-level roofline analyses with Intel Advisor
 
+Intel Advisor is a design and analysis tools for developeing performance code on Aurra. GPU Roofline Insights perspective enables you to estimate and visualize actual performance of GPU kernels using benchmarks and hardware metric profiling against hardware-imposed performance ceilings, as well as determine the main limiting factor.
+
+#### Loading a module for Advisor on Aurora
+The default `oneapi` module includes Advisor, so no additional module is needed for Advisor.
+```
+$ module load oneapi 
+$ advisor --version
+Intel(R) Advisor 2024.2.1 (build 615624) Command Line Tool
+Copyright (C) 2009-2024 Intel Corporation. All rights reserved.
+```
+
+#### Instruction to use Advisor roofline features on Aurora
+
+Step1: Setting the environments
+
+```
+$ module load oneapi
+$ export PRJ=<your_project_dir>
+```
+
+Step 2-a: Collecting the GPU Roofline data on a single GPU (Survey analysis and Trip Count with FLOP analysis with a single command line)
+
+```
+$ advisor --collect=roofline --profile-gpu --project-dir=$PRJ -- <your_executable> <your_arguments>
+```
+
+Step 2-b: Collecting the GPU Roofline data on one of MPI ranks (Survey analysis and Trip Count with FLOP analysis separately)
+
+```
+$ mpirun -n 1 gpu_tile_compact.sh advisor --collect=survey --profile-gpu --project-dir=$PRJ -- <your_executable> <your_arguments> : -n 11 gpu_tile_compact.sh <your_executable> <your_arguments>
+$ mpirun -n 1 gpu_tile_compact.sh advisor --collect=tripcounts --profile-gpu --flop --no-trip-counts -- project-dir=$PRJ -- <your_executable> <your_arguments> : -n 11 gpu_tile_compact.sh <your_executable> <your_arguments>
+```
+
+Step 3: Generate a GPU Roofline report, and then review the HTML report
+
+```
+$ advisor --report=all --project-dir=$PRJ --report-output=${PRJ}/roofline_all.html
+```
 
 
 ## Profiling at scale with Intel APS
+Intel APS (Application Performance Snapshot) provides an aggregated view of application performance at scale, and it is designed for large MPI workloads. 
+It captures performance aspects of compute intensive applications such as MPI and OpenMP usage and load imbalace, CPU and GPU utilization, memory access efficiency, vectorization, I/O, and memory footprint. 
+APS displays key optimization areas and suggests specialized tools for tuning particular performance aspects, such as Intel VTune Profiler and Intel Advisor. The tool is designed to be used on large MPI workloads and can help analyze different scalability issues on Aurora.
 
-NVIDIA® Nsight™ Systems provides developers a system-wide visualization of an applications performance. Developers can optimize bottlenecks to scale efficiently across any number or size of CPUs and GPUs on Polaris. For further optimizations to compute kernels developers should use Nsight Compute.
 
-The NVIDIA Nsight Compute is an interactive kernel profiler for CUDA applications. It provides detailed performance metrics and API debugging via a user interface and command line tool.
+#### Loading a module for APS on Aurora
+The default `oneapi` module includes APS, so no additional module is needed for APS.
+```
+$ module load oneapi 
+$ aps --version
+Intel(R) VTune(TM) Profiler 2024.2.1 (build 628577) Command Line Tool
+Copyright (C) 2009 Intel Corporation. All rights reserved.
+```
 
-In addition, the baseline feature of this tool allows users to compare results within the tool. NVIDIA Nsight Compute provides a customizable and data-driven user interface, metric collection, and can be extended with analysis scripts for post-processing results.
+#### Instruction to use APS
+```
+$ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh aps -r {aps_result_dir} ./{your_application} {Command_line_arguments_for_your_application}
+$ aps-report {aps_result_dir}
+```
+
 
 
 ## Step-by-step guide
+
+
+--- Need to replace with Aurora example
+
+
+
+
+
+
 
 ### Common part on Polaris
 Build your application for Polaris, and then submit your job script to Polaris or start an interactive job mode on Polaris as follows:  
