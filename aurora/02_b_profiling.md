@@ -16,61 +16,97 @@ Each tool provides different spectrum of profiling features, and simple examples
 Build your application for Aurora, and then submit your job script to Aurora or start an interactive job mode on Aurora as follows:  
 ```
 $ qsub -I -l select=1 -l walltime=1:00:00 -l filesystems=home:flare -q debug -A <project-name>
-
-$ module load oneapi pti-gpu thapi
-$ module li
-
-CCurrently Loaded Modules:
-  1) libfabric/1.20.1                     21) berkeley-db/18.1.40-2frw2z6
-  2) cray-pals/1.4.0                      22) gdbm/1.23
-  3) cray-libpals/1.4.0                   23) perl/5.38.0
-  4) gcc-runtime/12.2.0-267awrk           24) libmd/1.0.4-nvn3prd
-  5) gmp/6.2.1-yctcuid                    25) libbsd/0.12.1-dsshygz
-  6) mpfr/4.2.1-fhgnwe7                   26) expat/2.6.2-s3fkrly
-  7) mpc/1.3.1-ygprpb4                    27) python/3.10.13
-  8) gcc/12.2.0                           28) glib/2.78.3-hokd4eq
-  9) oneapi/eng-compiler/2024.07.30.002   29) babeltrace2/2.0.6
- 10) hwloc/master-git.1793e43-level-zero  30) lttng-tools/2.12.11
- 11) yaksa/0.3-aw2kkvy                    31) abseil-cpp/20240116.2-cihlltz
- 12) mpich/opt/4.3.0rc3                   32) protobuf/3.27.1
- 13) pti-gpu/d3639de                      33) ruby/3.1.0-nph2ga5
- 14) lz4/1.9.4                            34) ruby-ffi/1.15.4-6tewubh
- 15) libarchive/3.7.1-fvef5p2             35) ruby-babeltrace2/0.1.4-7j5zmu7
- 16) libiconv/1.17-kg7cda7                36) ruby-narray-old/0.6.1.2-mne4j5m
- 17) libmicrohttpd/0.9.50-jjjslhm         37) ruby-narray-ffi/1.4.4-2xfqkda
- 18) sqlite/3.43.2-2onu5lp                38) ruby-opencl/1.3.12-fiwkypq
- 19) elfutils/0.186-yuor73r               39) thapi/git.f3a65b7-serial
- 20) pcre2/10.43-vzzidje
-
-$ iprof --version
-v0.0.11-106-gf3a65b7
-
-$ unitrace --version
-2.1.1 (d3639def1f49364ca610306c07d423e803113210)
-
-$ vtune --version
-Intel(R) VTune(TM) Profiler 2024.2.1 (build 628577) Command Line Tool
-Copyright (C) 2009 Intel Corporation. All rights reserved.
-
-$ advisor --version
-Intel(R) Advisor 2024.2.1 (build 615624) Command Line Tool
-Copyright (C) 2009-2024 Intel Corporation. All rights reserved.
-
-$ aps --version
-Intel(R) VTune(TM) Profiler 2024.2.1 (build 628577) Command Line Tool
-Copyright (C) 2009 Intel Corporation. All rights reserved.
-
 ```
 
 ## Lightweight tracing with iprof/THAPI
+THAPI (Tracing Heterogeneous APIs) is a portable, progrmming model-centric tracing framework for heterogeneous computing applications with multiple backends(e.g., OpenCL, L0, and CUDA). `iprof` is a wrapper around the OpenCL, Level Zero, and CUDA tracers, and it provides aggregated profiling information with the minimum overheads. 
+
+#### Loading THAPI module on Aurora
+Load the THAPI module on Aurora as follows:  
+```
+$ module load thapi
+$ iprof --version
+v0.0.11-106-gf3a65b7
+```
+
+#### Instruction to use iprof from the THAPI module 
+Run your application with `iprof` on a single GPU.  
+```
+$ iprof ./{your_application} {Command_line_arguments_for_your_application}
+```
+Run your application with `iprof` on multiple GPU/Nodes.  
+```
+$ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh iprof ./{your_application} {Command_line_arguments_for_your_application}
+```
 
 
 
-## Unified tracing and profiling with Intel unitrace 
+<!-- ## Unified tracing and profiling with Intel unitrace  -->
 
 
 
 ## In-depth profiling with Intel VTune
+Intel VTune Profiler provides comprehensive data for application and system performance on Aurora. VTune helps users optimize GPU offload schema and data trasnfers for SYCL or OpenMP offload codes, and identify the most-time consuming GPU kernels for further optimization. It analyzes GPU-bound code for performance bottlenecks caused by microarchitectural contrasints or inefficient kernel algorithms. 
+
+VTune performs kernel-level analyses such as hpc performance characterization, GPU offload analysis and GPU hotspots analysis without rebuilding applications with special flags. For source-level in-kernel profiling analyses (i.e., dynamic instruction count, basic block execution latency, memory latency, hardware-assisted stall sampling, or memory access patterns analysis), the application need to be built with `-fdebug-info-for-profiling -gline-tables-only` which yields less runtime overheads than `-g`.
+
+
+
+#### Loading a module for VTune on Aurora
+The default `oneapi` module includes VTune, so no additional module is needed for VTune.
+```
+$ module load oneapi 
+$ vtune --version
+Intel(R) VTune(TM) Profiler 2024.2.1 (build 628577) Command Line Tool
+Copyright (C) 2009 Intel Corporation. All rights reserved.
+```
+
+#### Instruction to use VTune 
+##### HPC performance characterization
+
+HPC performance characterization analysis (with `-collect hpc-performance`) provide a different aspect of application performance such as high level hardware information, CPU cores utilization, GPU stacks utilization including XVE (Xe Vector Engine) hareware metrics and top offload regions, CPU-side memory metrics, and CPU instruction statics.
+
+```
+$ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh vtune -collect hpc-performance -r {result_dir} ./{your_application} {Command_line_arguments_for_your_application}
+```
+
+
+##### GPU offload analysis
+GPU offload analysis (with `-collect gpu-offload`) serves studies of an application offload implementation and assesses its efficiency. It traces Level-Zero and OpenCL API functions in oneAPI software stack, detects long latency host functions; shows time spent in data allocation and transfer function as well as kernel device time. 
+
+```
+$ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh vtune -collect gpu-offload -r {result_dir} ./{your_application} {Command_line_arguments_for_your_application}
+```
+
+##### GPU compute hotspots analysis
+GPU hotspots analysis is the most accurate analysis in tracing kernels on GPU. It allows to analyze the most time-consuming GPU kernels, characterize GPU usage based on GPU hardware metrics, identify performance issues caused by memory latency or inefficient kernel algorithm, and analyze GPU instruction frequency per certain instruction types. 
+
+```
+$ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh vtune -collect gpu-hotspots -r {result_dir} ./{your_application} {Command_line_arguments_for_your_application}
+```
+
+##### Source-level in-kernel profiling analyses
+
+###### VTune instruction count analysis
+```
+$ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh vtune -collect gpu-hotspots -knob characterization-mode=instruction-count -r {result_dir} ./{your_application} {Command_line_arguments_for_your_application}
+```
+
+###### VTune source analysis
+```
+$ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh vtune -collect gpu-hotspots -knob profiling-mode=source-analysis -r {result_dir} ./{your_application} {Command_line_arguments_for_your_application}
+```
+
+###### VTune memory latency analysis
+```
+$ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh vtune -collect gpu-hotspots -knob profiling-mode=source-analysis -knob source-analysis=mem-latency -r {result_dir} ./{your_application} {Command_line_arguments_for_your_application}
+```
+
+
+
+#### VTune server for pre-collected results on Aurora via SSH terminal
+
+
 
 
 
@@ -630,6 +666,7 @@ Dot         959501.640  0.00056     0.00073     0.00065
 
 
 ## References  
+[THAPI/iprof github repository](https://github.com/argonne-lcf/THAPI)  
 [NVIDIA Nsight Systems Documentation](https://docs.nvidia.com/nsight-systems/UserGuide/index.html)  
 [NVIDIA Nsight Compute Documentation](https://docs.nvidia.com/nsight-compute/NsightCompute/index.html)
 
