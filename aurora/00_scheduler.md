@@ -1,6 +1,6 @@
-# Using the Polaris Job Scheduler: PBS
+# Using the Aurora Job Scheduler: PBS
 
-Polaris is the first machine at ALCF to use the PBS scheduler. Here is our documentation for [PBS on Polaris](https://docs.alcf.anl.gov/running-jobs/job-and-queue-scheduling/). PBS is a third party product that comes with [extensive documentation](https://help.altair.com/2022.1.0/PBS%20Professional/PBSUserGuide2022.1.pdf). This is an introduction, not an extensive tutorial so we will only cover some basics.
+Aurora uses the PBS scheduler similar to other ALCF systems, such as Polaris. Here is our documentation for general use of [PBS](https://docs.alcf.anl.gov/running-jobs/job-and-queue-scheduling/). PBS is a third party product that comes with [extensive documentation](https://help.altair.com/2022.1.0/PBS%20Professional/PBSUserGuide2022.1.pdf). This is an introduction, not an extensive tutorial so we will only cover some basics.
 
 ### User is assumed to know:
 * schedulers are used to execute tasks on a cluster/supercomputer
@@ -21,7 +21,7 @@ A _scheduler_ is used to fairly run applications on a large number of computers 
 When you login to the supercomputer, you are given a shell running on one of the few _login nodes_. These are shared with every other user logged into the system at that time, so they are not meant for running compute intensive things. If you would like to build software or make test runs on an actual _worker_ node, please start an interactive session in the following way:
 
 ```bash
-qsub -I -l select=1 -l walltime=00:30:00 -q debug -l filesystems=home -A <project-name>
+qsub -I -l select=1 -l walltime=00:30:00 -q debug -l filesystems=home:flare -A <project-name>
 ```
 
 Here are the command breakdown:
@@ -30,14 +30,14 @@ Here are the command breakdown:
 * `-l select=1` means we want one compute node for this job
 * `-l walltime=00:30:00` means we want our one node for 30 minutes (format = "HOURS:MINUTES:SECONDS" or "DAYS:HOURS:MINUTES:SECONDS")
 * `-q debug` tells the scheduler which _queue_ we would like to use
-* `-l filesystems=home` tells the scheduler that we require our home directory for this job. You can also specify `filesystems=home:eagle` if you also need access to `/lus/eagle/<project-name>/`.
+* `-l filesystems=home` tells the scheduler that we require our home directory for this job. You can also specify `filesystems=home:flare` if you also need access to `/lus/flare/<project-name>/`.
 * `-A <project-name>` specifies the project to which this job will be charged
 
-After your job begins, you will be running a shell on a worker node. The environment can be setup using `module` and some things are already loaded, including some NVidia tools like `nvidia-smi`. You can also open another shell and use `ssh` to login to the node on which were allocated if you need another command line to help debug.
+After your job begins, you will be running a shell on a worker node. The environment can be setup using `module` and some things are already loaded, including the Intel suite of compilers, libraries, and tools. Additional software can be loaded as needed, such as `xpu-smi` to list GPU-related information. You can also open another shell and use `ssh` to login to the node on which were allocated if you need another command line to help debug.
 
 Once the walltime has been reached, your shells will automatically logout from the worker node(s).
 
-![polaris_interactive](media/polaris_qsub_interactive.gif)
+![polaris_interactive](media/aurora_qsub_interactive.png)
 
 ## Submit your first job
 
@@ -45,7 +45,7 @@ The more standard method for running a job is to submit it to the scheduler via 
 
 First we need to create a job script (example: [examples/00_hello_world.sh](examples/00_hello_world.sh)):
 ```bash
-#!/bin/bash
+#!/bin/bash -l
 #PBS -l select=1
 #PBS -l walltime=00:30:00
 #PBS -q debug
@@ -54,9 +54,7 @@ First we need to create a job script (example: [examples/00_hello_world.sh](exam
 #PBS -o logs/
 #PBS -e logs/
 
-module load gcc/11.2.0
-
-GPUS_PER_NODE=4
+GPUS_PER_NODE=6
 
 mpiexec -n $GPUS_PER_NODE -ppn $GPUS_PER_NODE echo Hello World
 
@@ -64,12 +62,12 @@ mpiexec -n $GPUS_PER_NODE -ppn $GPUS_PER_NODE echo Hello World
 
 You'll notice we can use the `#PBS` line prefix at the top of our script to set `qsub` command line options. We can still use the command line to override the options in the script. 
 
-> NOTE: here we used `-o logs/` and `-e logs/` which just redirects the STDOUT(`-o`) and the STDERR(`-e`) log files from the job into the `logs/` directory to keep things tidy.
+> NOTE: here we used `-o logs/` and `-e logs/` which just redirects the STDOUT(`-o`) and the STDERR(`-e`) log files from the job into the `logs/` directory to keep things tidy. The `logs` directory must exist before the job is submitted.
 
-> NOTE: Job scripts must be executable so we need to run `chmod a+x job_script.sh`. This also requires a proper [shebang](https://linuxize.com/post/bash-shebang/) to be set on the first line of our script, e.g. `#!/bin/bash`.
+> NOTE: Job scripts must be executable so we need to run `chmod a+x job_script.sh`. This also requires a proper [shebang](https://linuxize.com/post/bash-shebang/) to be set on the first line of our script, e.g. `#!/bin/bash -l`. The `-l` option makes bash act as if it had been invoked as a login shell, which helps to resolve issues with user environments when using different default shells (e.g. `zsh`).
 
 Now submit the job (don't forget to change `<project-name>` in the script):
-```bash
+```bash -l
 qsub job_script.sh
 ```
 
@@ -81,13 +79,13 @@ qstat -u <username>
 ```
 without specifying the `username` we will get a full print out of every job queued and running. This can be overwhelming so using the `username` reduces the output to jobs for just that `username`. Adding `alias qsme='qstat -u <username>'` to your `.bashrc` is a nice shortcut.
 
-![polaris_hello_world](media/polaris_qsub_hello_world.gif)
+![aurora_hello_world](media/aurora_qsub_hello_world.png)
 
-The default output of `qstat -u <username>` is shown here:
-
-![polaris_qstat_default](media/polaris_qstat_default.png)
+In output from the first instance of `qstat -u <username>` one can see that enough time has passed that the job had already entered the `R` state and was running. 
 
 You can see the PBS Job ID, Submitter's Username, Queue name, Job name (defaults to shell script file name but can be specified via `qsub` options), Session ID, Number of Nodes (NDS), Tasks, Required Memory (we didn't specify), Required Wall-time in hours:minutes, State (R=RUNNING,Q=QUEUED see man-page for more), and Elapsed Time.
+
+In output for the second instance of `qstat -u <username>` we can see that the job has completed and results are available in the stdout log file created.
 
 ## Delete your job
 
@@ -100,10 +98,15 @@ qdel <job-id>
 
 Any job STDOUT or STDERR output will go into two different files that by default are named:
 ```bash
-<pbs-job-id>.ER
-<pbs-job-id>.OU
+<script_name>.o<pbs-job-id>
+<script_name>.e<pbs-job-id>
 ```
-In our example submit script, we specify `-o logs/` and `-e logs/` so that the files go into the `logs/` directory.
+In our example submit script, we specify `-o logs/` and `-e logs/` so that the files go into the `logs/` directory. In that case, the output files are named differently:
+```bash
+logs/${PBS_JOBID}.ER
+logs/${PBS_JOBID}.OU
+```
+
 
 # PBS CHEATSHEET
 
