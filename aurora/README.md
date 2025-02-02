@@ -1,4 +1,4 @@
-# Polaris Beginners Guide
+# Aurora Beginners Guide
 
 This guide aims to introduce researchers with coding experience on clusters and/or supercomputers to the specifics of using ALCF systems.
 
@@ -10,42 +10,46 @@ This guide aims to introduce researchers with coding experience on clusters and/
 * Use `module` command to inspect and modify the shell environment
 
 
-## [Polaris](https://www.alcf.anl.gov/polaris)
+## [Aurora](https://www.alcf.anl.gov/aurora)
 
-![Polaris](media/polaris.jpg)
+![Aurora](media/aurora.jpg)
 
-The inside of Polaris again shows the _nodes_ stacked up in a closet.
+The inside of Aurora again shows the _nodes_ stacked up in each closet along with mechanical equipment to cooling water through the system.
 
-![Polaris-rack](media/polaris1.jpg)
+![Aurora-rack](media/aurora1.jpg)
 
-Polaris is an NVIDIA A100-based system.
+Aurora is an Intel GPU -based system.
 
-Polaris Machine Specs
-* Speed: 44 petaflops
+Aurora Machine Specs
+* Speed: 
+  * [HPL](https://top500.org/system/180183/): 1.012 exaflops 
+  * [HPL-MxP](https://hpl-mxp.org/results.md): 10.6 exaflops
 * Each Node has:
-  * 4 NVIDIA (A100) GPUs
-  * 1 AMD EPYC (Milan) CPUs
-* ~560 Total Nodes
+  * 6 Intel Data Center GPU Max Series GPUs
+  * 2 Intel Xeon CPU Max Series processors
+* 10,624 Total Nodes
 
 
 ## Logging in:
 
 Login using `ssh` replacing `<username>` with your ALCF username
 ```bash
-ssh <username>@polaris.alcf.anl.gov
+ssh <username>@aurora.alcf.anl.gov
 ```
 
-![login](media/polaris_login.gif)
+![login](media/aurora_login.png)
 
 You will be prompted for your password, which is a six digit code generated uniquely each time using the MobilePASS+ app. 
 
 ## Quick filesystem breakdown
 
-When you login, you start in your _home_ directory: `/home/<username>/` (1TB default starting quota)
-As an ALCF user you will be assigned access to different allocation _projects_. You can see your projects listed on the [ALCF Accounts Page](accounts.alcf.anl.gov). Each project maps to a user group to control filesystem access, so you can also check your projects using the `groups` command on the terminal. Projects are given storage spaces on our Eagle and/or eagle Lustre filesystems where all members of the project can read/write and share data/software:
-* `/lus/eagle/projects/<project-name>`
-* `/lus/eagle/projects/<project-name>`
+When you login, you start in your _home_ directory: `/home/<username>/` (1TB default starting quota). Note, this home directory is currently specific to Aurora and differs from your _home_ accessible from other ALCF systems (e.g. Polaris). 
+As an ALCF user you will be assigned access to different allocation _projects_. You can see your projects listed on the [ALCF Accounts Page](accounts.alcf.anl.gov). Each project maps to a user group to control filesystem access, so you can also check your projects using the `groups` command on the terminal. Projects are given storage spaces on our Flare Lustre filesystem where all members of the project can read/write and share data/software:
+* `/lus/flare/projects/<project-name>`
+
 Users should use project spaces for large scale storage and software installations. Increases can be requested via `support@alcf.anl.gov`.
+
+Upon request, users can also utilize the DAOS filesystem in Aurora for increased performance. 
 
 ## Clone repo:
 
@@ -55,20 +59,20 @@ git clone https://github.com/argonne-lcf/ALCFBeginnersGuide.git
 cd ALCFBeginnersGuide
 ```
 
-![clone](media/polaris_git_clone_repo.gif)
+![clone](media/aurora_git_clone_repo.png)
 
 ## Getting to know the environment
 
 ALCF uses [Environment Modules](https://modules.readthedocs.io/en/latest/index.html) to provide users with loadable software packages. This includes compilers, python installations, and other software. Here are some basic commands:
 
 `module list`: lists all currently loaded modules
-![module list](media/polaris_module_list.png)
+![module list](media/aurora_module_list.png)
 
 `module avail`: lists the available modules that can be loaded. What modules are available is controled by the `MODULEPATH` environment variable. The colon-seperated list of paths are scanned for module files. When you first login, this only contains system modules from HPE/Cray/etc. If the list is too long for your screen, you can use `less`-like commands to navigate (arrow keys, space bar, etc.).
-![module avail](media/polaris_module_avail_A.gif)
+![module avail](media/aurora_module_avail.png)
 
 
-By default, `MODULEPATH` only includes system libraries from HPE/Nvidia. One can include pre-built modules from ALCF staff by adding the path `/soft/modulefiles` to `MODULEFILE` using either of these commands:
+By default, `MODULEPATH` only includes system libraries from Intel/HPE. One can include pre-built modules from ALCF staff by adding the path `/soft/modulefiles` to `MODULEFILE` using either of these commands:
 ```bash
 export MODULEPATH=$MODULEPATH:/soft/modulefiles
 # OR
@@ -76,32 +80,27 @@ module use /soft/modulefiles
 ```
 
 After doing this, you will find additional modules listed.
-![module use](media/polaris_module_use.gif)
+![module use](media/aurora_module_use.png)
 
 ## Loading modules
 
 Now we can "load modules" which simply executes some simple bash commands to add paths to prebuilt software into our environment variables such as `PATH` and `LD_LIBRARY_PATH`, thus making the software easily available for compilation or use.
 
 ```bash
-module load cudatoolkit-standalone/12.5.0
+module load cmake
 ```
 
-When one first logs in to Polaris, the Nvidia HPC environment is loaded. A more traditional GNU HPC environment is also available and can be loaded by swapping:
-```bash
-module swap PrgEnv-nvhpc PrgEnv-gnu
-```
-
+When one first logs in to Aurora, the Intel HPC environment is loaded and what we expect most users will use. 
 
 ## Using Spack
 Spack is an HPC oriented build management system. [Documentation can be found here.](https://spack.readthedocs.io/en/latest/) In this case of this quick introduction, Spack is simply used to offer additional pre-compiled software.
 
-After loading one of the spack packages from the `/soft/modulefiles` area:
+On Aurora, these additional spack packages are made available by default from the `/soft/modulefiles` area:
 ```bash 
-module load spack-pe-gnu
+module use /soft/modulefiles
 ```
-There will be many new packages available to load via `modules` which can be perused via `module avail`.
 
-![module spack](media/polaris_module_spack.gif)
+![module spack](media/aurora_module_spack.png)
 
 
 
