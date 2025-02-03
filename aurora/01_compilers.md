@@ -120,7 +120,7 @@ mpicxx -o 01_example_sycl --intel -fsycl  -fsycl-targets=spir64_gen -Xsycl-targe
 
 ### Running the code: [`01_example_sycl.sh`](examples/01_example_sycl.sh)
 
-Next this bash script can be used to submit a 2 node job with 8 ranks, 4 per node.
+Next this bash script can be used to submit a 1 node job with a 1 MPI rank.
 
 ```bash
 #!/bin/bash -l
@@ -200,9 +200,75 @@ node   0   1   2   3
 
 Similar to the output from `lscpu` we see that cores `0-51,104-155` make up NUMA domain 0 and cores `52-103,156-207` make up NUMA domain 1. NUMA domains 2 and 3 are the HBM memories attached to each socket. In the `node distances` table, we see that the HBM for the first CPU is NUMA domain 2 and the HBM for the second CPU is NUMA domain 3. This information is useful for those users that would like to control how memory is allocated by their applications via `numactl` (e.g. prefer HBM or DDR).
 
+As a means to quickly get started, one could opt for naively binding MPI ranks and processes to the CPU cores using `depth` logic whereby each MPI rank is assigned to a consecutive set of CPU cores.
 
+For an application running 6 MPI ranks per node (1 per GPU) and each with 4 OpenMP threads on the host, one could set the depth as 4 (or something larger).
+
+```bash
+mpiexec -n 6 --ppn 6 --depth=4 --cpu-bind depth --env OMP_NUM_THREADS=4 ...
+```
+
+This is certainly appropriate for functionality testing, but depending on the application workload there may be performance impacts to only using the first socket. Better may be placing the first three MPI ranks on socket 0 and the second three MPI ranks on socket 1 such that each MPI rank is closest to its respective set of three GPUs. This can be achieved by passing an explicit list of CPU core IDs to assign to each MPI rank.
+
+```bash
+mpiexec -n 6 --ppn 6 --cpu-bind=list:0-3,4-7,8-11,52-55,56-59,60-63 --env OMP_NUM_THREADS=4 ...
+```
+
+Example code and submission scripts for testing different CPU affinity options are available in the GettingStarted examples [repo](https://github.com/argonne-lcf/GettingStarted/tree/master/Examples/Aurora/affinity_omp).
 
 # GPU Affinity
 
+Similar to the fare degree of flexibility in how one binds software processes to the CPU hardware, one can also bind processes to the GPU hardware at different levels. The default is that each of the 6 GPUs is viewed as a single device. Each Aurora GPU consists of two physical tiles and each can be targeted individually by applications. In other words, a typical configuration for an application may be to spawn 12 MPI ranks per compute node with each MPI rank bound to a single GPU tile. Furthermore, each GPU tile can be targeted in a more granular fashion  to bind MPI ranks to individual Compute Command Streamers (CCSs). The latter may prove beneficial when an application has considerable work on the CPUs that warrants additional parallelism. 
+
+A set of helper scripts are provided which accept the local MPI rank ID as input and assigns the appropriate GPU hardware in a round-robin fashion. 
+
+* ALCFBeginnersGuide/aurora/examples/HelperScripts
+  * set_affinity_gpu.sh: bind MPI ranks to GPU tile
+  * set_affinity_gpu_2ccs.sh: bind MPI ranks to 1/2 GPU tile
+  * set affinity_gpu_4ccs.sh: bind MPI ranks to 1/4 GPU tile
+
+## Example submission scripts: [`01_example_openmp_affinity.sh`](examples/01_example_openmp_affinity.sh) [`01_example_sycl_affinity.sh`](examples/01_example_sycl_affinity.sh)
+
+This bash script can be used to submit a 1 node job with 12 MPI ranks, each bound to a single GPU tile.
+
+```bash
+#!/bin/bash -l
+#PBS -l select=1
+#PBS -l place=scatter
+#PBS -l walltime=0:10:00
+#PBS -q debug
+#PBS -A <project-id>
+#PBS -l filesystems=home:flare
+#PBS -o logs/
+#PBS -e logs/
+
+cd ${PBS_O_WORKDIR}
+
+NNODES=`wc -l < $PBS_NODEFILE`
+NRANKS_PER_NODE=12
+NDEPTH=1
+NTHREADS=1
+
+NTOTRANKS=$(( NNODES * NRANKS_PER_NODE ))
+echo "NUM_OF_NODES= ${NNODES} TOTAL_NUM_RANKS= ${NTOTRANKS} RANKS_PER_NODE= ${NRANKS_PER_NODE} THREADS_PER_RANK= ${NTHREADS}"
+
+EXE=./01_example_openmp
+
+MPI_ARG="-n ${NTOTRANKS} --ppn ${NRANKS_PER_NODE} --depth=${NDEPTH} --cpu-bind depth "
+
+AFFINITY=""
+#AFFINITY="./HelperScripts/set_affinity_gpu_4ccs.sh"
+#AFFINITY="./HelperScripts/set_affinity_gpu_2ccs.sh"
+AFFINITY="./HelperScripts/set_affinity_gpu.sh"
+
+COMMAND="mpiexec ${MPI_ARG} ${EXE}"
+echo "COMMAND= ${COMMAND}"
+${COMMAND}
+
+```
+
+![example_openmp_affinity](media/01_compilers_openmp_affinity_example.png)
+
+This test code has support for detecting the number of devices available and binding devices to MPI ranks itself. However, in the first example there are 2 MPI ranks sharing the entire GPU (i.e. both tiles). In the second example, the helper script `set_affinity_gpu.sh` only exposes a single GPU tile. The 2 MPI ranks being bound to individual GPU tiles can help to improve performance and share the device.
 
 # [NEXT ->](02_a_debugger.md)
