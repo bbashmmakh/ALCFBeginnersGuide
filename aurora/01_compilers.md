@@ -1,22 +1,24 @@
-# Compilers on Polaris
+# Compilers on Aurora
 
-This section describes how to compile C/C++ code standalone, with CUDA, and with MPI. Specifically it introduces the Cray/HPE environment for compiling system compatible codes. 
+This section describes how to compile C/C++ code standalone, with SYCL and OpenMP, and with MPI. Specifically it introduces the Intel software environment for compiling system compatible codes. 
 
 ### User is assumed to know:
 * how to compile and run code
-* basic familiarity with CUDA and MPI
+* basic familiarity with MPI
+* basic familiarity with SYCL and/or OpenMP
 ### Learning Goals:
-* HPE (formerly Cray) provides custom wrappers for C/C++/FORTRAN compilers
+* MPI compiler wrappers for oneAPI C/C++/FORTRAN compilers
 * How to compile a C++ code
-* How to compile a C++ code with CUDA and/or MPI
+* How to compile a C++ code with SYCL and/or MPI
+* How to compile a C++ code with OpenMP and/or MPI
 * Modifications to job submission script when using MPI
 
 # Compiling C/C++ code
 
-When you first login to Polaris, there will be a default list of loaded modules (see them with `module list`). This includes the Cray/HPE build environment. The Cray/HPE build system utilizes compiler wrappers:
-- `cc` - C compiler (use it like GNU `gcc`)
-- `CC` - C++ compiler (use it like GNU `g++`)
-- `ftn` - Fortran compiler (use it like GNU `gfortran`)
+When you first login to Aurora, there will be a default list of loaded modules (see them with `module list`). This includes the oneAPI suite of compilers, libraries, and tools and Cray MPICH. It is recommend to use the MPI compiler wrappers for building applications:
+- `mpicc` - C compiler (use it like oneAPI `icx` or GNU `gcc`)
+- `mpicxx` - C++ compiler (use it like oneAPI `icpx` or GNU `g++`)
+- `mpif90` - Fortran compiler (use it like oneAPI `ifx` or GNU `gfortran`)
 
 Next an example C++ code is compiled.
 
@@ -31,17 +33,17 @@ int main(void){
 }
 ```
 
-Build and run on a Polaris login node or worker node
+Build and run on an Aurora login node or worker node
 ```bash
-CC 01_example.cpp -o 01_example
+mpicxx 01_example.cpp -o 01_example
 ./01_example
 ```
 
-__NOTE:__ that this only uses the CPU. CUDA is required to use the GPU.
+__NOTE:__ that this only uses the CPU. A GPU programming model, such as SYCL, OpenMP, or OpenCL (or HIP) is required to use the GPU.
 
-![example_cpp](media/01_compilers_cpp_example.gif)
+![example_cpp](media/01_compilers_cpp_example.png)
 
-# Compiling C/C++ with CUDA
+# Compiling C/C++ with SYCL
 
 ### Example code: [`01_example.cu`](examples/01_example.cu)
 ```c++
