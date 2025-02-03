@@ -48,14 +48,67 @@ mpiexec -n $NNODES ./helper_toggle_eu_debug.sh 1
 
 ## Intel gdb-oneapi debugger
 
+#### Loading a module for gdb-oneapi on Aurora
+The default `oneapi` module includes `gdb-oneapi`, so no additional module is needed for `gdb-oneapi`.
+```
+$ module load oneapi 
+$ gdb-oneapi --version
+GNU gdb (Intel(R) Distribution for GDB* 2024.2.1) 14.2
+Copyright (C) 2024 Free Software Foundation, Inc.; (C) 2024 Intel Corp.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+```
+
 
 ## Linaro DDT debugger
+Linara DDT is a popular debugger to simplify the troubleshooting and optimization of complex, high-performance computing (HPC) applications. It excels in debugging parallel, multithreaded, and distributed applications written in C, C++, Fortran, and Python, and leverages an intuitive graphical interface that enables developers to easily identify bugs, memory leaks, and performance bottlenecks in individual threads or across thousands of processes on Aurora. 
+
+
+#### Configuring the remote client
+
+
+
+#### Loading a module for ddt on Aurora
+Load the `forge` module on Aurora as follows:  
+```
+$ module load forge
+$ ddt --version
+Linaro DDT
+Part of Linaro Forge.
+Copyright (c) 2023-2024 Linaro Limited. All rights reserved.
+
+Version: 24.1.1
+Build ID: e662396d3e3eb309e231c793feaa7dc160ac4093
+Review ID: Ifcf4812083c11d6b798d72e0857266c580b59867
+Patchset ID: 1
+Build Platform: centos linux 7.9 x86_64
+Build Date: Dec 17 2024 23:45:12
+
+Frontend OS: Linux
+Nodes' OS: unknown
+Last connected forge-backend: unknown
+```
+
+
+#### Running applications with ddt and connecting it to your client
 
 
 
 
 
 ## A quick example
+
+### Build an example
+
+
+
+### Debugging with `gdb-oneapi`
+
+
+
+### Debugging with `ddt` 
+
 
 
 ## References  
