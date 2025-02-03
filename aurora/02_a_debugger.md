@@ -46,11 +46,22 @@ export NNODES=`wc -l < $PBS_NODEFILE`
 mpiexec -n $NNODES ./helper_toggle_eu_debug.sh 1
 ```
 
+## Intel gdb-oneapi debugger
 
+
+## Linaro DDT debugger
+
+
+
+
+
+## A quick example
 
 
 ## References  
-<!-- [NVIDIA Nsight Systems Documentation](https://docs.nvidia.com/nsight-systems/UserGuide/index.html)  
-[NVIDIA Nsight Compute Documentation](https://docs.nvidia.com/nsight-compute/NsightCompute/index.html)
- -->
+[User Guide for Intel Distribution for GDB](https://www.intel.com/content/www/us/en/docs/distribution-for-gdb/user-guide/2025-0/overview.html)  
+[ALCF User Guide for gdb-oneapi](https://docs.alcf.anl.gov/aurora/debugging/gdb-oneapi/)   
+[Linaro DDT User Guide](https://docs.linaroforge.com/24.1.1/html/forge/ddt/index.html)   
+[ALCF User Guide for Linaro DDT](https://docs.alcf.anl.gov/aurora/debugging/ddt-aurora/)
+
 # [NEXT ->](02_b_profiling.md)
