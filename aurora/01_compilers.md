@@ -205,5 +205,4 @@ Similar to the output from `lscpu` we see that cores `0-51,104-155` make up NUMA
 # GPU Affinity
 
 
-
-# [NEXT ->](02_profiling.md)
+# [NEXT ->](02_a_debugger.md)
