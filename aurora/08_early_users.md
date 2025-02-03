@@ -24,5 +24,7 @@ This (Early User Notes and Known Issues)[https://docs.alcf.anl.gov/aurora/known-
 
 Reach out to your ALCF/Catalyst point-of-contact.
 
+The MyALCF (portal)[https://my.alcf.anl.gov/#/dashboard] for quick access to project and allocation information, training resources, and user guides.
+
 Email ALCF (Support)[mailto:support@alcf.anl.gov].
 
