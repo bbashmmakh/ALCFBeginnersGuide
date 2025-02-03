@@ -149,4 +149,4 @@ mpiexec -n ${NTOTRANKS} --ppn ${NRANKS_PER_NODE} --hostfile ${PBS_NODEFILE} /hom
 # GPU Affinity
 
 
-# [NEXT ->](02_profiling.md)
+# [NEXT ->](02_a_debugger.md)
