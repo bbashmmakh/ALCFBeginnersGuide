@@ -3,14 +3,13 @@
 #PBS -l place=scatter
 #PBS -l walltime=0:10:00
 #PBS -q debug
-#PBS -A Catalyst
+#PBS -A <project-id>
 #PBS -l filesystems=home:flare
 #PBS -o logs/
 #PBS -e logs/
 
 cd ${PBS_O_WORKDIR}
 
-# MPI example w/ 4 MPI ranks per node spread evenly across cores
 NNODES=`wc -l < $PBS_NODEFILE`
 NRANKS_PER_NODE=12
 NDEPTH=1
@@ -23,12 +22,10 @@ EXE=./01_example_openmp
 
 MPI_ARG="-n ${NTOTRANKS} --ppn ${NRANKS_PER_NODE} --depth=${NDEPTH} --cpu-bind depth "
 
-# select subdevices by default or use helper script to affinitize MPI ranks to tiles
-#export LIBOMPTARGET_DEVICES=subdevice
 AFFINITY=""
-#AFFINITY="../../../../HelperScripts/Aurora/set_affinity_gpu_4ccs.sh"
-#AFFINITY="../../../../HelperScripts/Aurora/set_affinity_gpu_2ccs.sh"
-AFFINITY="../../../../HelperScripts/Aurora/set_affinity_gpu.sh"
+#AFFINITY="./HelperScripts/set_affinity_gpu_4ccs.sh"
+#AFFINITY="./HelperScripts/set_affinity_gpu_2ccs.sh"
+AFFINITY="./HelperScripts/set_affinity_gpu.sh"
 
 COMMAND="mpiexec ${MPI_ARG} ${EXE}"
 echo "COMMAND= ${COMMAND}"
