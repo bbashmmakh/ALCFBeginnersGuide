@@ -29,6 +29,7 @@ Aurora Machine Specs
   * 2 Intel Xeon CPU Max Series processors
 * 10,624 Total Nodes
 
+Aurora Exascale Compute Blade (ECB)
 ![Aurora-rack](media/aurora_exascale_compute_blade.png)
 
 ## Logging in:
