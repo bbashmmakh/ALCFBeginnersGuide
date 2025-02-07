@@ -44,6 +44,7 @@ On an interactive job mode, issue the following before starting debugging:
 ```
 export NNODES=`wc -l < $PBS_NODEFILE`
 mpiexec -n $NNODES ./helper_toggle_eu_debug.sh 1
+export ZET_ENABLE_PROGRAM_DEBUGGING=1
 ```
 
 ## Intel gdb-oneapi debugger
@@ -59,6 +60,22 @@ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 ```
+
+#### Running applications with gdb-oneapi
+
+
+##### Debugging on a single GPU
+```
+$ gdb-oneapi -q ./{your_application} 
+```
+
+
+##### Debugging an MPI rank out of multiple MPI ranks
+To debug an MPI application with `gdb-oneapi`, xterm can be used to display the output from multiple processes launched in separate xterm windows. For that, X11 forwarding should be established from user's local system to Aurora login node, and then to the compute node. 
+```
+$ mpirun -n 1 ./{your_application}  : -n 1 xterm -e gdb-oneapi -q ./{your_application} : -n 2 ./{your_application}
+```
+
 
 
 ## Linaro DDT debugger
@@ -100,10 +117,188 @@ Last connected forge-backend: unknown
 ## A quick example
 
 ### Build an example
+```
+jkwack@x4711c2s6b0n0:~> cd ALCFBeginnersGuide/aurora/examples/02_tools_example/
+
+jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> make
+mpicc -fiopenmp -fopenmp-targets=spir64   Comp_GeoSeries_omp.c -o Comp_GeoSeries_omp_mpicc_DP 
+rm -rf *.o *.mod *.dSYM
+mpicc -fiopenmp -fopenmp-targets=spir64  -g -O0  Comp_GeoSeries_omp.c -o Comp_GeoSeries_omp_mpicc_DP_DEBUG 
+rm -rf *.o *.mod *.dSYM
+
+jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> ./Comp_GeoSeries_omp_mpicc_DP_DEBUG 
+                     Number of MPI process:      1
+                                 Precision: double
+      Number of rows/columns of the matrix:   1024
+     The highest order of geometric series:     30
+                     Number of repetitions:     10
+                 Memory Usage per MPI rank:    16.777216 MB
+        Warming up .....
+        Main Computations  10 repetitions ......
+        0%                     25%                      50%                     75%                     100%
+        ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+                      Error_MPI_{Min,Mean,Max}/MPI =   9.5285e-07    9.5285e-07    9.5285e-07
+                     GFLOP-rate_{Min,Mean,Max}/MPI =    68.751704     68.751704     68.751704
+                                         Wall Time =     0.009151 sec
+                                         FLOP-rate =    68.751704 GFLOP/sec
+
+```
 
 
 
 ### Debugging with `gdb-oneapi`
+```
+jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> gdb-oneapi -q ./Comp_GeoSeries_omp_mpicc_DP_DEBUG 
+Reading symbols from ./Comp_GeoSeries_omp_mpicc_DP_DEBUG...
+(gdb) break Comp_GeoSeries_omp.c:32
+Breakpoint 1 at 0x40378f: file Comp_GeoSeries_omp.c, line 32.
+(gdb) run
+Starting program: /home/jkwack/ALCFBeginnersGuide/aurora/examples/02_tools_example/Comp_GeoSeries_omp_mpicc_DP_DEBUG 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
+warning: File "/opt/aurora/24.180.3/spack/unified/0.8.0/install/gcc_bootstrap/linux-sles15-x86_64/gcc-7.5.0/gcc-12.2.0-5ieouwtcwrrwan33k5itbqrsrom7cjrh/lib64/libstdc++.so.6.0.30-gdb.py" auto-loading has been declined by your `auto-load safe-path' set to "$datadir/../../../..:/usr".
+To enable execution of this file add
+    add-auto-load-safe-path /opt/aurora/24.180.3/spack/unified/0.8.0/install/gcc_bootstrap/linux-sles15-x86_64/gcc-7.5.0/gcc-12.2.0-5ieouwtcwrrwan33k5itbqrsrom7cjrh/lib64/libstdc++.so.6.0.30-gdb.py
+line to your configuration file "/home/jkwack/.config/gdb/gdbinit".
+To completely disable this security protection add
+    set auto-load safe-path /
+line to your configuration file "/home/jkwack/.config/gdb/gdbinit".
+For more information about this security protection see the
+"Auto-loading safe path" section in the GDB manual.  E.g., run from the shell:
+    info "(gdb)Auto-loading safe path"
+[New Thread 0x7fff86c21700 (LWP 128941)]
+[New Thread 0x7fff6ffff700 (LWP 128942)]
+[Thread 0x7fff86c21700 (LWP 128941) exited]
+[New Thread 0x7fff86c21700 (LWP 128943)]
+[Thread 0x7fff6ffff700 (LWP 128942) exited]
+[Thread 0x7fff86c21700 (LWP 128943) exited]
+[New Thread 0x7fff86c21700 (LWP 128944)]
+[New Thread 0x7fff6ffff700 (LWP 128945)]
+[New Thread 0x7fff57fff700 (LWP 128946)]
+[Thread 0x7fff86c21700 (LWP 128944) exited]
+[Thread 0x7fff6ffff700 (LWP 128945) exited]
+[New Thread 0x7fff6ffff700 (LWP 128947)]
+[Thread 0x7fff57fff700 (LWP 128946) exited]
+[New Thread 0x7fff57fff700 (LWP 128948)]
+[New Thread 0x7fff45b06700 (LWP 128949)]
+[Thread 0x7fff6ffff700 (LWP 128947) exited]
+[Thread 0x7fff57fff700 (LWP 128948) exited]
+[Thread 0x7fff45b06700 (LWP 128949) exited]
+[New Thread 0x7fff45b06700 (LWP 128950)]
+[New Thread 0x7fff6ffff700 (LWP 128951)]
+[New Thread 0x7fff57fff700 (LWP 128952)]
+[Thread 0x7fff45b06700 (LWP 128950) exited]
+[Thread 0x7fff6ffff700 (LWP 128951) exited]
+[Thread 0x7fff57fff700 (LWP 128952) exited]
+[New Thread 0x7fff57fff700 (LWP 128953)]
+[New Thread 0x7fff6ffff700 (LWP 128954)]
+[New Thread 0x7fff45b06700 (LWP 128955)]
+[Thread 0x7fff57fff700 (LWP 128953) exited]
+[Thread 0x7fff6ffff700 (LWP 128954) exited]
+[Thread 0x7fff45b06700 (LWP 128955) exited]
+[New Thread 0x7fff45b06700 (LWP 128956)]
+[New Thread 0x7fff6ffff700 (LWP 128957)]
+[New Thread 0x7fff57fff700 (LWP 128958)]
+[Thread 0x7fff45b06700 (LWP 128956) exited]
+[Thread 0x7fff6ffff700 (LWP 128957) exited]
+[Thread 0x7fff57fff700 (LWP 128958) exited]
+intelgt: gdbserver-ze started for process 128938.
+[New Thread 0x7fff57fff700 (LWP 129003)]
+[New Thread 0x7ffe8d306700 (LWP 129004)]
+                     Number of MPI process:      1
+                                 Precision: double
+      Number of rows/columns of the matrix:   1024
+     The highest order of geometric series:     30
+                     Number of repetitions:     10
+                 Memory Usage per MPI rank:    16.777216 MB
+        Warming up .....
+[Switching to thread 2.2827:0 (ZE 0.44.1.2 lane 0)]
+
+Thread 2.2827 hit Breakpoint 1.2, with SIMD lanes [0-15], Comp_Geo.extracted () at Comp_GeoSeries_omp.c:32
+32           id = i+j*n;
+(gdb) list
+27     REAL tmpR, tmpResult;
+28  
+29  #pragma omp target teams distribute parallel for collapse(2)
+30     for(j=0;j<n;j++){
+31        for(i=0;i<n;i++){
+32           id = i+j*n;
+33           tmpR = GeoR[id];
+34           tmpResult = 1.0E0;
+35           for (iGeo=1;iGeo<=nGeo;iGeo++){
+36              tmpResult = 1.0E0 + tmpR*tmpResult;
+(gdb) set scheduler-locking step
+(gdb) step
+33           tmpR = GeoR[id];
+(gdb) step
+34           tmpResult = 1.0E0;
+(gdb) step
+35           for (iGeo=1;iGeo<=nGeo;iGeo++){
+(gdb) step
+36              tmpResult = 1.0E0 + tmpR*tmpResult;
+(gdb) step
+38           GeoResult[id] = tmpResult;
+(gdb) print tmpResult
+$1 = 1.000990099009901
+(gdb) backtrace
+#0  Comp_Geo.extracted () at Comp_GeoSeries_omp.c:38
+(gdb) exit
+A debugging session is active.
+
+    Inferior 1 [process 128938] will be killed.
+    Inferior 2 [device [0000:18:00.0].0] will be detached.
+    Inferior 3 [device [0000:18:00.0].1] will be detached.
+    Inferior 4 [device [0000:42:00.0].0] will be detached.
+    Inferior 5 [device [0000:42:00.0].1] will be detached.
+    Inferior 6 [device [0000:6c:00.0].0] will be detached.
+    Inferior 7 [device [0000:6c:00.0].1] will be detached.
+    Inferior 8 [device [0001:18:00.0].0] will be detached.
+    Inferior 9 [device [0001:18:00.0].1] will be detached.
+    Inferior 10 [device [0001:42:00.0].0] will be detached.
+    Inferior 11 [device [0001:42:00.0].1] will be detached.
+    Inferior 12 [device [0001:6c:00.0].0] will be detached.
+    Inferior 13 [device [0001:6c:00.0].1] will be detached.
+
+Quit anyway? (y or n) y
+Detached from device [0000:18:00.0].0
+[Inferior 2 (device [0000:18:00.0].0) detached]
+Detached from device [0000:18:00.0].1
+Ignoring packet error, continuing...
+detach: Can't detach process.
+[Inferior 3 (device [0000:18:00.0].1) detached]
+[Inferior 4 (device [0000:42:00.0].0) detached]
+Detached from device [0000:42:00.0].0
+Detached from device [0000:42:00.0].1
+[Inferior 5 (device [0000:42:00.0].1) detached]
+[Inferior 6 (device [0000:6c:00.0].0) detached]
+Detached from device [0000:6c:00.0].0
+Detached from device [0000:6c:00.0].1
+[Inferior 7 (device [0000:6c:00.0].1) detached]
+[Inferior 8 (device [0001:18:00.0].0) detached]
+Detached from device [0001:18:00.0].0
+[Inferior 9 (device [0001:18:00.0].1) detached]
+Detached from device [0001:18:00.0].1
+[Inferior 10 (device [0001:42:00.0].0) detached]
+Detached from device [0001:42:00.0].0
+[Inferior 11 (device [0001:42:00.0].1) detached]
+Detached from device [0001:42:00.0].1
+[Inferior 12 (device [0001:6c:00.0].0) detached]
+Detached from device [0001:6c:00.0].0
+[Inferior 13 (device [0001:6c:00.0].1) detached]
+Detached from device [0001:6c:00.0].1
+intelgt: inferior 2 (gdbserver-ze) has been removed.
+intelgt: inferior 3 (gdbserver-ze) has been removed.
+intelgt: inferior 4 (gdbserver-ze) has been removed.
+intelgt: inferior 5 (gdbserver-ze) has been removed.
+intelgt: inferior 6 (gdbserver-ze) has been removed.
+intelgt: inferior 7 (gdbserver-ze) has been removed.
+intelgt: inferior 8 (gdbserver-ze) has been removed.
+intelgt: inferior 9 (gdbserver-ze) has been removed.
+intelgt: inferior 10 (gdbserver-ze) has been removed.
+intelgt: inferior 11 (gdbserver-ze) has been removed.
+intelgt: inferior 12 (gdbserver-ze) has been removed.
+intelgt: inferior 13 (gdbserver-ze) has been removed.
+```
 
 
 

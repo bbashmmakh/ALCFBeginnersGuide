@@ -9,7 +9,7 @@ EXE_DP_DEBUG=Comp_GeoSeries_omp_${CC}_DP_DEBUG
 #EXE_SP=Comp_GeoSeries_omp_${CC}_SP
 CFLAGS_PROFILE=-O2 -fdebug-info-for-profiling -gline-tables-only
 CFLAGS_DEBUG=-g -O0
-CFLAGS_COMMON=-fiopenmp -fopenmp-targets=spir64 -D__STRICT_ANSI__
+CFLAGS_COMMON=-fiopenmp -fopenmp-targets=spir64 
 #CFLAGS=-fiopenmp -fopenmp-targets=spir64 -cpp
 LDFLAGS=
 
