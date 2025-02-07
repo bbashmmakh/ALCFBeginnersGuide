@@ -95,7 +95,9 @@ Click the `Remote Launch` pull-down and click `Configure` to create a connector 
 
 Click the `Add` icon on the `Configure Remote Connections` screen:
 
-![Linaro_Client_Configuration_03](media/02_a_Linaro_Client_03.png)
+<!-- ![Linaro_Client_Configuration_03](media/02_a_Linaro_Client_03.png) -->
+<img src="media/02_a_Linaro_Client_03.png" alt="Linaro_Client_Configuration_03" width="500"/>
+
 
 Add `Aurora` to `Connection Name`, `<your_user_id>@login.aurora.alcf.anl.gov` to `Host Name`, and `/opt/aurora/24.180.3/support/tools/forge/24.1.1` to `Remote Installation Directory`, and then click `Test Remote Launch` icon to test the configuration.
 
