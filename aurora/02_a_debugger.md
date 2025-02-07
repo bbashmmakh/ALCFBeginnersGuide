@@ -79,11 +79,28 @@ $ mpirun -n 1 ./{your_application}  : -n 1 xterm -e gdb-oneapi -q ./{your_applic
 
 
 ## Linaro DDT debugger
-Linara DDT is a popular debugger to simplify the troubleshooting and optimization of complex, high-performance computing (HPC) applications. It excels in debugging parallel, multithreaded, and distributed applications written in C, C++, Fortran, and Python, and leverages an intuitive graphical interface that enables developers to easily identify bugs, memory leaks, and performance bottlenecks in individual threads or across thousands of processes on Aurora. 
+Linara DDT is widely used for debugging parallel Message Passing Interface (MPI) and threaded applications on HPC systems. Its graphical user interface (GUI) provides a simplifying, easy-to-use method of debugging applications at scale on Aurora. For the best experience, download and install the [Linaro Forge client 24.1.1](https://www.linaroforge.com/download-documentation/). This is available for Linux, macOS, and Windows systems.  
+
 
 
 #### Configuring the remote client
 
+Before starting a debugging with DDT on Aurora compute nodes, you need to set your client for remote connection to Aurora. 
+
+![Linaro_Client_Configuration_01](media/02_a_Linaro_Client_01.png)
+
+Click the `Remote Launch` pull-down and click `Configure` to create a connector for Aurora:
+
+![Linaro_Client_Configuration_02](media/02_a_Linaro_Client_02.png)
+
+Click the `Add` icon on the `Configure Remote Connections` screen:
+
+![Linaro_Client_Configuration_03](media/02_a_Linaro_Client_03.png)
+
+Add `Aurora` to `Connection Name`, `<your_user_id>@login.aurora.alcf.anl.gov` to `Host Name`, and `/opt/aurora/24.180.3/support/tools/forge/24.1.1` to `Remote Installation Directory`, and then click `Test Remote Launch` icon to test the configuration.
+
+![Linaro_Client_Configuration_04](media/02_a_Linaro_Client_04.png)
+![Linaro_Client_Configuration_05](media/02_a_Linaro_Client_05.png)
 
 
 #### Loading a module for ddt on Aurora
@@ -109,17 +126,40 @@ Last connected forge-backend: unknown
 
 
 #### Running applications with ddt and connecting it to your client
+Connect the Linaro client on your local system to Aurora by clicking `Aurora` from the `Remote Launch` pull-down:
+![Linaro_Client_Configuration_06](media/02_a_Linaro_Client_06.png)
+![Linaro_Client_Configuration_07](media/02_a_Linaro_Client_07.png)
 
+On an interactive job mode or a bathed job, run `ddt --connect` as follows (e.g., 12 MPI ranks):
 
+```
+ddt --np=12 --connect --mpi=generic --mpiargs="--ppn 12 -envall" ./{your_application}
 
+```
+On your client, a window with your ddt command pops up for a reverse connection, and clide `Accept` to connect your client to the ddt run on the compute node:
+![Linaro_Client_Configuration_08](media/02_a_Linaro_Client_08.png)
 
 
 ## A quick example
 
-### Build an example
+### Start an interactive job mode and activate the debugging mode
 ```
+jkwack@aurora-uan-0012:~> qsub -l select=1 -l walltime=60:00 -A alcf_training -q debug -I -X
+qsub: waiting for job 2287553.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov to start
+qsub: job 2287553.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov ready
+
 jkwack@x4711c2s6b0n0:~> cd ALCFBeginnersGuide/aurora/examples/02_tools_example/
 
+jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> mpiexec -n 1 ./helper_toggle_eu_debug.sh  1
+INFO: EU debug state on rank-0: 1 1 1 1 1 1 
+
+jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> export ZET_ENABLE_PROGRAM_DEBUGGING=1
+
+```
+
+
+### Build an example
+```
 jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> make
 mpicc -fiopenmp -fopenmp-targets=spir64   Comp_GeoSeries_omp.c -o Comp_GeoSeries_omp_mpicc_DP 
 rm -rf *.o *.mod *.dSYM
@@ -142,11 +182,28 @@ jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> ./Co
                                          Wall Time =     0.009151 sec
                                          FLOP-rate =    68.751704 GFLOP/sec
 
+jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> mpirun -n 12 gpu_tile_compact.sh ./Comp_GeoSeries_omp_mpicc_DP_DEBUG 
+                     Number of MPI process:     12
+                                 Precision: double
+      Number of rows/columns of the matrix:   1024
+     The highest order of geometric series:     30
+                     Number of repetitions:     10
+                 Memory Usage per MPI rank:    16.777216 MB
+        Warming up .....
+        Main Computations  10 repetitions ......
+        0%                     25%                      50%                     75%                     100%
+        ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+                      Error_MPI_{Min,Mean,Max}/MPI =   9.5285e-07    9.5285e-07    9.5285e-07
+                     GFLOP-rate_{Min,Mean,Max}/MPI =    34.293652     48.543673     69.819497
+                                         Wall Time =     0.018346 sec
+                                         FLOP-rate =   411.523820 GFLOP/sec
+
+
 ```
 
 
 
-### Debugging with `gdb-oneapi`
+### Debugging with `gdb-oneapi` on a single GPU
 ```
 jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> gdb-oneapi -q ./Comp_GeoSeries_omp_mpicc_DP_DEBUG 
 Reading symbols from ./Comp_GeoSeries_omp_mpicc_DP_DEBUG...
@@ -300,9 +357,39 @@ intelgt: inferior 12 (gdbserver-ze) has been removed.
 intelgt: inferior 13 (gdbserver-ze) has been removed.
 ```
 
+### Debugging an MPI application with `gdb-oneapi`  
+X11 forwarding from your local machine to Aurora login node (i.e., ssh -Y login.aurora.alcf.anl.gov) and from the login node to the compute node via an interactive job mode (i.e., qsub -X -I -l select=1 -l walltime=60:00 -A alcf_training -q debug) are required. 
+```
+jkwack@x4300c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> mpirun -n 1 gpu_tile_compact.sh xterm -e gdb-oneapi -q ./Comp_GeoSeries_omp_mpicc_DP_DEBUG : -n 11 gpu_tile_compact.sh ./Comp_GeoSeries_omp_mpicc_DP_DEBUG
+```
+An xterm window pops for gdb as follows and users can use the same instruction as debugging on a single GPU at the above:
+![gdb_01](media/02_a_gdb_01.png)
+
 
 
 ### Debugging with `ddt` 
+
+Load `ddt` module and run `ddt` command with your application:
+```
+jkwack@x4305c1s7b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> module load forge
+
+jkwack@x4305c1s7b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> ddt --np=12 --connect --mpiargs="--ppn 12 -envall" ./Comp_GeoSeries_omp_mpicc_DP_DEBUG
+```
+A reverser connection request window pops up and you can click `Accept`:
+![Linaro_Example_01](media/02_a_Linaro_example_01.png)
+Click `Run`:
+![Linaro_Example_02](media/02_a_Linaro_example_02.png)
+![Linaro_Example_03](media/02_a_Linaro_example_03.png)
+![Linaro_Example_04](media/02_a_Linaro_example_04.png)
+Scroll the source window to line 32, and select `Add breakpoint for All` after right-click on the line 32:
+![Linaro_Example_05](media/02_a_Linaro_example_05.png)
+![Linaro_Example_06](media/02_a_Linaro_example_06.png)
+Click the green triangle icon on the left top to start debugging:
+![Linaro_Example_07](media/02_a_Linaro_example_07.png)
+Click `Pause` on a new window for Processes:
+![Linaro_Example_08](media/02_a_Linaro_example_08.png)
+Click `Locals`, `Current Line(s)`, `Current Stack`, or `GPU Devices` to see the data:
+![Linaro_Example_09](media/02_a_Linaro_example_09.png)
 
 
 
