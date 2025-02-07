@@ -146,7 +146,7 @@ On your client, a window with your ddt command pops up for a reverse connection,
 
 ### Start an interactive job mode and activate the debugging mode
 ```
-jkwack@aurora-uan-0012:~> qsub -l select=1 -l walltime=60:00 -A alcf_training -q debug -I -X
+jkwack@aurora-uan-0012:~> qsub -l select=1 -l walltime=60:00 -l filesystems=home -A alcf_training -q debug -I -X
 qsub: waiting for job 2287553.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov to start
 qsub: job 2287553.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov ready
 
@@ -163,7 +163,7 @@ jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> expo
 ### Build an example
 ```
 jkwack@x4711c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> make
-mpicc -fiopenmp -fopenmp-targets=spir64   Comp_GeoSeries_omp.c -o Comp_GeoSeries_omp_mpicc_DP 
+mpicc -fiopenmp -fopenmp-targets=spir64  -O2 -fdebug-info-for-profiling -gline-tables-only Comp_GeoSeries_omp.c -o Comp_GeoSeries_omp_mpicc_DP 
 rm -rf *.o *.mod *.dSYM
 mpicc -fiopenmp -fopenmp-targets=spir64  -g -O0  Comp_GeoSeries_omp.c -o Comp_GeoSeries_omp_mpicc_DP_DEBUG 
 rm -rf *.o *.mod *.dSYM
@@ -360,7 +360,7 @@ intelgt: inferior 13 (gdbserver-ze) has been removed.
 ```
 
 ### Debugging an MPI application with `gdb-oneapi`  
-X11 forwarding from your local machine to Aurora login node (i.e., ssh -Y login.aurora.alcf.anl.gov) and from the login node to the compute node via an interactive job mode (i.e., qsub -X -I -l select=1 -l walltime=60:00 -A alcf_training -q debug) are required. 
+X11 forwarding from your local machine to Aurora login node (i.e., ssh -Y login.aurora.alcf.anl.gov) and from the login node to the compute node via an interactive job mode (i.e., qsub -X -I -l select=1 -l walltime=60:00  -l filesystems=home -A alcf_training -q debug) are required. 
 ```
 jkwack@x4300c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> mpirun -n 1 gpu_tile_compact.sh xterm -e gdb-oneapi -q ./Comp_GeoSeries_omp_mpicc_DP_DEBUG : -n 11 gpu_tile_compact.sh ./Comp_GeoSeries_omp_mpicc_DP_DEBUG
 ```
