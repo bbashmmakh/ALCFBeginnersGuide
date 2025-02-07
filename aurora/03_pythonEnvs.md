@@ -1,8 +1,8 @@
 # Python Environments
 
 ### Users are assumed to know:
-* how to use Python
-* basic Conda usage
+* How to use Python
+* Basic Conda usage
 ### Learning Goals:
 * How to add prebuilt Python environments into your environment
 * Loading a Conda module
@@ -10,97 +10,89 @@
 
 ## Overview
 
-ALCF provides pre-built Python environments using `miniconda`. Within these environments, ALCF compiles GPU-supported python libraries, such as:
+ALCF provides a pre-built Anaconda environment that makes available [PyTorch](https://pytorch.org/), [TensorFlow](https://www.tensorflow.org/), [Horovod](https://horovod.readthedocs.io/en/stable/tensorflow.html), [scikit-learn](https://docs.alcf.anl.gov/aurora/data-science/frameworks/scikit-learn/), and [mpi4py](https://mpi4py.readthedocs.io/en/stable/) with Intel extensions and optimizations, among other popular Python and ML packages.
+This Anaconda environment can be activated loading the `frameworks` module.
 
-- [TensorFlow](https://docs.alcf.anl.gov/polaris/data-science-workflows/frameworks/tensorflow/)
-  - [Horovod](https://horovod.readthedocs.io/en/stable/tensorflow.html)
-- [PyTorch](https://docs.alcf.anl.gov/polaris/data-science-workflows/frameworks/pytorch/)
-  - [DDP](https://pytorch.org/tutorials/beginner/dist_overview.html)
-  - [Horovod](https://horovod.readthedocs.io/en/stable/pytorch.html)
-  - [DeepSpeed](https://docs.alcf.anl.gov/polaris/data-science-workflows/frameworks/deepspeed/)
-- [JAX](https://jax.readthedocs.io/en/latest/)
-- [mpi4py](https://mpi4py.readthedocs.io/en/stable/)
 
-## Loading Python Environment
+## The AI/ML `frameworks` module
 
-Remember you can list all the available Conda environments using `module list conda`. As of this writing there is only one, `conda/2024-04-29`. ALCF typically installs an environment every six months including the latest versions of Tensorflow and PyTorch (built from source). The date signifies when it was built.
-
-To load and activate the default environment:
-
-```Shell
-# first tell modules where to find conda
-module use /soft/modulefiles
-# load conda into your environment
-module load conda
-# activate the `base` conda environment
-conda activate base
+The following command can be used to load the latest `frameworks` module
+```bash
+module load frameworks
 ```
+
+Please note that:
+
+- The `frameworks` module automatically activates a pre-built `conda` environment which comes with GPU-supported builds of Python AI/ML libraries (use `pip list` to see the list of all installed packages).
+- The `frameworks` module may load a different oneAPI compiler SDK than the default module.
+- The `frameworks` module is updated approximately every quarter.
 
 If you need to install additional packages, there are two approaches covered in the following sections:
 
-1. [Virtual environments via `venv`](#virtual-environment-via-venv): builds an extendable enviroment on top of the immutable base environment.
-2. [Clone the base `conda` environment](#clone-conda-environment): complete mutable copy of the base environment into a user's space.
+1. [Virtual environments via `venv`](#virtual-environment-via-venv): builds an extendable enviroment on top of the immutable `frameworks` environment.
+2. [Clone the `frameworks` environment](#clone-conda-environment): complete mutable copy of the `frameworks` environment into a user's space.
 
-In general, these are things that should be done in a user's project directory to get the best performance and available capacity.
+> **Note**: Importing Python modules at large node counts (beyond 1000 nodes) from a _user-created_ virtual or conda environment can be significantly slow, or it may even crash the Lustre file system. Please refer to [05_AI_training_at_scale.md](05_AI_training_at_scale.md) and [Copper](https://docs.alcf.anl.gov/aurora/data-management/copper/copper/) on efficiently loading custom-installed Python packages at scale.
+
 
 ## Virtual Environment via `venv`
 
-The easiest method for making a custom environment that builds on-top of the ALCF environment is to use `venv`. 
-
-```Shell
+The easiest method for making a custom environment that builds on-top of the `frameworks` environment is to use `venv`. 
+```bash
+module load frameworks
 python -m venv /path/to/venvs/base --system-site-packages
 ```
 
-By passing the `--system-site-packages` flag, we are able to create our own
-isolated environment into which we can install new packages, while taking
-advantage of the pre-built libraries from `conda`.
+By passing the `--system-site-packages` flag, the new virtual environment inherits all the packages from the `frameworks` environment, while being able to install new packages.
 
 To activate this new environment,
-
-```Shell
+```bash
 source /path/to/venvs/base/bin/activate
 ```
 
 Once activated, installing packages with pip is as usual:
-
-```Shell
+```bash
 python -m pip install <new-package>
 ```
 
 To install a _different version_ of a package that is **already installed** in the
-base environment add the `--ignore-installed` to your command:
-
-```Shell
+`frameworks` environment add the `--ignore-installed` to your command:
+```bash
 python -m pip install --ignore-installed <new-package>
 ```
+
+The base environment is not writable, so it is not possible to remove or uninstall packages from it. The packages installed with the above pip command should shadow those installed in the base environment.
+
 
 ## Clone Conda Environment
 
 Cloning a Conda Environment creates a full copy of the ALCF conda environment in a specified directory. This means the user has full control of the environment. 
 
-This process takes 11 GB of disk space and 15 minutes to complete.
+> **Note**: This process takes several GB of disk space and is quite slow to complete. 
+For these reasons, we suggest the use of [Python virtual environments](#virtual-environment-via-venv) whenever possible.
 
-Create a `clone` of the base environment by:
+Create a `clone` of the `frameworks` environment by:
 
-```Shell
-# load conda
-module load conda ; conda activate base
+```bash
+# load the frameworks module
+module load frameworks
 # create the clone
-conda create --clone base --prefix /path/to/envs/myclone
+conda create --clone $CONDA_PREFIX --prefix /path/to/envs/myclone
 # load the cloned environment
 conda activate /path/to/envs/myclone
 ```
 
-Future loading can be done with the following. It is necessary to ensure the same version of conda you are loading is the same as that with which you generated the clone.
-
-```Shell
-module load conda; conda activate /path/to/envs/myclone
+Future loading can be done with:
+```bash
+module load frameworks && conda activate /path/to/envs/myclone
 ```
+It is necessary to ensure the same version of conda you are loading is the same as that with which you generated the clone.
+
 
 
 ## Additional Resources
 
-- [ALCF Docs: Python on Polaris](https://docs.alcf.anl.gov/polaris/data-science-workflows/python/)
+- [ALCF Docs: Python on Aurora](https://docs.alcf.anl.gov/aurora/data-science/python/)
+- [ALCF Docs: Copper](https://docs.alcf.anl.gov/aurora/data-management/copper/copper/)
 
-
-# [NEXT ->](04_jupyterNotebooks.md)
+# [NEXT ->](04_AI_frameworks.md)

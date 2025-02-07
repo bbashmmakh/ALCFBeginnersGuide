@@ -30,7 +30,7 @@ Along with importing the `torch` library, you need to import the `intel_extensio
 
 ### ⌨️   Hands on
 
-1. Log in to Aurora and submit an interactive job
+1. [Login to Aurora](https://docs.alcf.anl.gov/aurora/getting-started-on-aurora/) and [submit an interactive job](https://docs.alcf.anl.gov/aurora/running-jobs-aurora#submitting-a-job):
    ```bash
    # 1. ssh into Aurora
    your-local-machine:$ ssh <your_alcf_username>@aurora.alcf.anl.gov 
@@ -160,7 +160,7 @@ From a compute node of an interactive session:
    ```bash
    chmod a+x pytorch_xpu.py
    ```
-1. Load the frameworks module:
+1. [Load the frameworks module](https://docs.alcf.anl.gov/aurora/data-science/python#aiml-framework-module):
    ```bash
    module load frameworks
    ```
@@ -258,13 +258,15 @@ for epoch in range(10):
 + torch.distributed.destroy_process_group()
 ```
 
+### ⌨️   Hands on
+
 Here are the steps to run the above code on Aurora:
 
-1. [Login to Aurora](https://docs.alcf.anl.gov/aurora/getting-started-on-aurora/): 
+1. [Login to Aurora](https://docs.alcf.anl.gov/aurora/getting-started-on-aurora/):
    ```bash
    ssh <username>@aurora.alcf.anl.gov
    ```
-1. [Request a one-node interactive job](https://docs.alcf.anl.gov/aurora/running-jobs-aurora#submitting-a-job) for 30 minutes:
+1. [Request an interactive job on two nodes](https://docs.alcf.anl.gov/aurora/running-jobs-aurora#submitting-a-job) for 30 minutes:
    ```bash
    qsub -q debug -A <your_project_name> -l select=2,walltime=30:00 -l filesystems=home:flare -k doe -j oe -I
    ```
@@ -284,4 +286,4 @@ Here are the steps to run the above code on Aurora:
 - [ALCF Docs: PyTorch on Aurora](https://docs.alcf.anl.gov/aurora/data-science/frameworks/pytorch/)
 - [Intel's IPEX Documentation](https://intel.github.io/intel-extension-for-pytorch/xpu/latest/tutorials/examples.html)
 
-# [NEXT ->](04_jupyterNotebooks.md)
+# [NEXT ->](05_AI_training_at_scale.md)
