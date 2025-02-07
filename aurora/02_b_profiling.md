@@ -1,4 +1,4 @@
-# Profiling on Aurora (WIP)
+# Profiling on Aurora
 
 On Aurora, several profiling tools from Intel and HPC communities are available to help users profile and optimize their application performance. 
 Each tool provides different spectrum of profiling features, and simple examples with the tools are provided in this session.  
