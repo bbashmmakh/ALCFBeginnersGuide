@@ -365,7 +365,9 @@ X11 forwarding from your local machine to Aurora login node (i.e., ssh -Y login.
 jkwack@x4300c2s6b0n0:~/ALCFBeginnersGuide/aurora/examples/02_tools_example> mpirun -n 1 gpu_tile_compact.sh xterm -e gdb-oneapi -q ./Comp_GeoSeries_omp_mpicc_DP_DEBUG : -n 11 gpu_tile_compact.sh ./Comp_GeoSeries_omp_mpicc_DP_DEBUG
 ```
 An xterm window pops for gdb as follows and users can use the same instruction as debugging on a single GPU at the above:
-![gdb_01](media/02_a_gdb_01.png)
+<!-- ![gdb_01](media/02_a_gdb_01.png) -->
+
+<img src="media/02_a_gdb_01.png" alt="gdb_01" width="500"/>
 
 
 
