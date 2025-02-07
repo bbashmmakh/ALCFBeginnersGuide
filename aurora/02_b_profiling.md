@@ -69,8 +69,8 @@ HPC performance characterization analysis (with `-collect hpc-performance`) prov
 ```
 $ mpirun -n {Number_of_MPI} -ppn 12 gpu_tile_compact.sh vtune -collect hpc-performance -r {result_dir} ./{your_application} {Command_line_arguments_for_your_application}
 ```
-<img src="media/02_b_Vtune_HPC-Perf_01.png" alt="VTune_HPC-perf_01" width="450"/>
-<img src="media/02_b_Vtune_HPC-Perf_03.png" alt="VTune_HPC-perf_03" width="420"/>
+<img src="media/02_b_Vtune_HPC-Perf_01.png" alt="VTune_HPC-perf_01" width="650"/>
+<img src="media/02_b_Vtune_HPC-Perf_03.png" alt="VTune_HPC-perf_03" width="650"/>
 
 ##### GPU offload analysis
 GPU offload analysis (with `-collect gpu-offload`) serves studies of an application offload implementation and assesses its efficiency. It traces Level-Zero and OpenCL API functions in oneAPI software stack, detects long latency host functions; shows time spent in data allocation and transfer function as well as kernel device time. 
