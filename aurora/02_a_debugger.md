@@ -1,4 +1,4 @@
-# Debugging on Aurora (WIP)
+# Debugging on Aurora
 
 `gdb-oneapi` from Intel oneAPI software and `ddt` from Linaro are available to debug your applications on Intel Data Center Max 1550 GPUs on Aurora. 
 
@@ -49,7 +49,7 @@ export ZET_ENABLE_PROGRAM_DEBUGGING=1
 
 ## Intel gdb-oneapi debugger
 
-#### Loading a module for gdb-oneapi on Aurora
+### Loading a module for gdb-oneapi on Aurora
 The default `oneapi` module includes `gdb-oneapi`, so no additional module is needed for `gdb-oneapi`.
 ```
 $ module load oneapi 
@@ -61,16 +61,16 @@ This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 ```
 
-#### Running applications with gdb-oneapi
+### Running applications with gdb-oneapi
 
 
-##### Debugging on a single GPU
+#### Debugging on a single GPU
 ```
 $ gdb-oneapi -q ./{your_application} 
 ```
 
 
-##### Debugging an MPI rank out of multiple MPI ranks
+#### Debugging an MPI rank out of multiple MPI ranks
 To debug an MPI application with `gdb-oneapi`, xterm can be used to display the output from multiple processes launched in separate xterm windows. For that, X11 forwarding should be established from user's local system to Aurora login node, and then to the compute node. 
 ```
 $ mpirun -n 1 ./{your_application}  : -n 1 xterm -e gdb-oneapi -q ./{your_application} : -n 2 ./{your_application}
@@ -83,7 +83,7 @@ Linara DDT is widely used for debugging parallel Message Passing Interface (MPI)
 
 
 
-#### Configuring the remote client
+### Configuring the remote client
 
 Before starting a debugging with DDT on Aurora compute nodes, you need to set your client for remote connection to Aurora. 
 
@@ -103,7 +103,7 @@ Add `Aurora` to `Connection Name`, `<your_user_id>@login.aurora.alcf.anl.gov` to
 ![Linaro_Client_Configuration_05](media/02_a_Linaro_Client_05.png)
 
 
-#### Loading a module for ddt on Aurora
+### Loading a module for ddt on Aurora
 Load the `forge` module on Aurora as follows:  
 ```
 $ module load forge
@@ -125,7 +125,7 @@ Last connected forge-backend: unknown
 ```
 
 
-#### Running applications with ddt and connecting it to your client
+### Running applications with ddt and connecting it to your client
 Connect the Linaro client on your local system to Aurora by clicking `Aurora` from the `Remote Launch` pull-down:
 ![Linaro_Client_Configuration_06](media/02_a_Linaro_Client_06.png)
 ![Linaro_Client_Configuration_07](media/02_a_Linaro_Client_07.png)
