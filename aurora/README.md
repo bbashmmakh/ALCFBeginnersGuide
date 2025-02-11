@@ -24,13 +24,24 @@ Aurora Machine Specs
 * Speed: 
   * [HPL](https://top500.org/system/180183/): 1.012 exaflops 
   * [HPL-MxP](https://hpl-mxp.org/results.md): 10.6 exaflops
+* 10,624 Total Nodes
+  * 166 Cabinents
+  * 1.36 PB HBM CPU Capacity
+  * 10.9 PB DDR5 Capacity
+  * 8.16 PB HBM GPU Capacity
 * Each Node has:
   * 6 Intel Data Center GPU Max Series GPUs
-  * 2 Intel Xeon CPU Max Series processors
-* 10,624 Total Nodes
+  * 2 Intel Xeon CPU Max Series processors (52 cores each)
+  * 8 Slignshot 11 fabric endpoints
 
-Aurora Exascale Compute Blade (ECB)
+
+Additional details on the connectivity and performance characteristics of a single Aurora Exascale Compute Blade (ECB) follows. The GPUs are connected in an all-to-all fashion. There are two sets of three GPUs that have a direct PCIe connection to one of the CPUs. The two CPUs are connected with UPI and each has 512 GB DDR and 128 GB HBM memory. Each CPU is connected to PCIe switch that fans out to 4 Slingshot 11 Network Interface Cards (NICs).
+
 ![Aurora-rack](media/aurora_exascale_compute_blade.png)
+
+The image below shows a deeper dive into the physical hardware from the perspective of how an application might see the compute node. Though not quite correct, we can think of the compute blade as consisting of two sockets, each having a 52-core CPU and 3 GPUs. Each CPU core supports 2 hyperthreads. The GPUs physically consist of two tiles with a fast interconnect and many applications may be benefit by binding processes to individual tiles as indicated by the color assignments (one of many possibilities).
+
+![Aurora-node](media/aurora_exascale_compute_blade2.png)
 
 ## Logging in:
 
