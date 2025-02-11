@@ -59,15 +59,15 @@ Then run your mpiexec as you would normally run.
 If you want your I/O to go through copper, add `/tmp/${USER}/copper/` to the begining of your PATHS. Here only the root compute node will do the I/O directly with the lustre file system.
 If `/tmp/${USER}/copper/` is not added to the begining of your paths, then all compute nodes would do I/O directly to the lustre file system.
 
-For example, if you have a local conda environment located in a path at `/lus/flare/projects/Aurora_deployment/kaushik/copper/oct24/copper/run/copper_conda_env`, you need to prepath the copper path as `/tmp/${USER}/copper/lus/flare/projects/Aurora_deployment/kaushik/copper/oct24/copper/run/copper_conda_env`.
+For example, if you have a local conda environment located in a path at `/lus/flare/projects/alcf_training/softwares/copper-lus-pip-custom-package `, you need to prepath the copper path as `/tmp/${USER}/copper/lus/flare/projects/alcf_training/softwares/copper-lus-pip-custom-package`.
 The same should be done for any type of PATHS, like PYTHONPATH, CONDAPATH and your input file path.
 
 Python Example
 
 ```
 time mpirun --np ${NRANKS} --ppn ${RANKS_PER_NODE} --cpu-bind=list:4:9:14:19:20:25:56:61:66:71:74:79 --genvall\
-            --genv=PYTHONPATH=/tmp/${USER}/copper/lus/flare/projects/Aurora_deployment/kaushik/copper/oct24/copper/run/copper_conda_env\
-	    python3 -c "import numpy; print(numpy.__file__)"
+            --genv=PYTHONPATH=/tmp/${USER}/copper/lus/flare/projects/alcf_training/softwares/copper-lus-pip-custom-package\
+	    python3 -c "import torch; print(torch.__file__)"
 ```
 
 Non python example
