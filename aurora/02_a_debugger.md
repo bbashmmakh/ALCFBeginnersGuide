@@ -132,7 +132,7 @@ Connect the Linaro client on your local system to Aurora by clicking `Aurora` fr
 ![Linaro_Client_Configuration_06](media/02_a_Linaro_Client_06.png)
 ![Linaro_Client_Configuration_07](media/02_a_Linaro_Client_07.png)
 
-On an interactive job mode or a bathed job, run `ddt --connect` as follows (e.g., 12 MPI ranks):
+On an interactive job mode or a batch job, run `ddt --connect` as follows (e.g., 12 MPI ranks):
 
 ```
 ddt --np=12 --connect --mpi=generic --mpiargs="--ppn 12 -envall" ./{your_application}

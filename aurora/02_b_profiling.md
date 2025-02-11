@@ -133,10 +133,10 @@ Step 2: Open a new terminal and log into an Aurora login node (no X11 forwarding
 $ ssh <username>@login.aurora.alcf.anl.gov
 ```
 
-Step 3: Start VTune server on an Aurora login node after loading `oneapi` module and setting corresponding environmental variables for VTune
+Step 3: Start VTune server on an Aurora login node 
 
 ```
-$ module load oneapi
+$ source /soft/preview/oneapi-lkg/2025.0.0.885_825/oneapi/vtune/2025.0/env/vars.sh
 $ vtune-backend --data-directory=<location of precollected VTune results>
 ```
 Step 4: Open a new terminal with SSH port forwarding enabled
