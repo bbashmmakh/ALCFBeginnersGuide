@@ -1,282 +1,207 @@
-# DAOS - Distributed Asycnhronous Object Store File System
+# DAOS - Distributed Asynchronous Object Store File System
 
-## Introduction
+### Users are assumed to know:
+* Basic Linux terminal usage
 
-DAOS is a major file system in Aurora with 230 PB delivering upto >30 TB/s with 1024 DAOS server storage Nodes. DAOS is an open-source software-defined object store designed for massively distributed Non Volatile Memory (NVM) and NVMe SSD. DAOS presents a unified storage model with a native Key-array Value storage interface supporitng POSIX, MPIO, DFS and HDF5. Users can use DAOS for their I/O and checkpointing on Aurora. DAOS is fully integrated with the wider Aurora compute fabric as can be seen in the overall storage architecture below.
+### Learning Goals:
+* How to use the DAOS file system on Aurora
 
-## Why you need to use DAOS instead of Lustre
 
-* Efficient for unstructured data.
-* Efficient for accessing small data.
-* Compared to Lustre's 0.6 TB/s, our current daos_user cluster with 128 / 1024 daos can deliver 5 TB/s.
 
-DAOS cluster size is the number of available DAOS servers. While we are working towards bringing up the entire 1024 DAOS server available users, currently different number of DAOS nodes could be up. Please check with support or run an IOR test to get an estimate on the current number of DAOS servers available. The bandwidth listed here in the last column is a theoretical peak bandwidth.
+## Overview 
+
+[DAOS](https://docs.alcf.anl.gov/aurora/data-management/daos/daos-overview/) is a major file system composed of 1024 DAOS server storage nodes fully integrated with the wider Aurora compute fabric. 
+Compared to the Lustre file system `flare`, DAOS will have twice the storage capacity (230 PB vs 100 PB) and more than an order of magnitude higher theoretical peak bandwidth (30 TB/s vs 0.6 TB/s).
+
+While we are working towards bringing up the entire 1024 DAOS server available users, our current `daos_user` cluster has 128 / 1024 DAOS nodes and can deliver up to 5 TB/s. 
+These are the expected theoretical peak bandwidths for DAOS clusters of different sizes: 
 
 ![1739060755336](image/06_DAOS/1739060755336.png)
 
-## Note
+DAOS storage is organized into POOLS and CONTAINERS:
 
-This is an initial test DAOS configuration and as such, any data on the DAOS system will eventually be deleted when the configuration is changed into a larger system. Warning will be given before the system is wiped to allow time for users to move any important data off.
+- a DAOS **POOL** is a physically allocated dedicated storage space for a project. Pools are managed by administrators. 
+- a DAOS **CONTAINER** is a collection of data objects of different types: for example, POSIX Containers include files and directories. Containers can be created and managed by users inside a DAOS pool: typically a user should not need more than one or a few containers.
 
-DAOS is a scratch file system. Please note that data may be removed or unavailable at any time.
+Here we show how you can use DAOS for fast I/O and checkpointing on Aurora.
+These are the steps we will take:
 
-## DAOS Pool Allocation
+1. Load the DAOS module
+1. Request a DAOS pool space allocated for your project
+1. Create a POSIX container 
+1. Mount a POSIX container on a login node and on compute nodes
+1. Submit a job with access to the DAOS file system
 
-The first step in using DAOS is to get DAOS POOL space allocated for your project. Users should submit a request as noted below to have a DAOS pool created for your project.
+> **Note**: This is an initial test DAOS configuration. As such, data may be removed or unavailable at any time, so make sure to back up all important data to `flare`.
 
-DAOS pool is a physically allocated dedicated storage space for your project.
 
-Email [support@alcf.anl.gov](mailto:support@alcf.anl.gov) to request a DAOS pool with the following information.
+
+## DAOS Module
+
+To use DAOS you should load the `daos` module. 
+This can be done on a login node (UAN) or on a compute node:
+
+```bash
+module use /soft/modulefiles
+module load daos
+```
+
+To see a list of available DAOS pools:
+```bash
+$ daos pool list
+Pool            Size   State    Used Imbalance Disabled 
+----            ----   -----    ---- --------- -------- 
+datascience     96 TB  Degraded 11%  11%       32/4096  
+```
+
+If you do not have any pool, you can request a pool allocation.
+
+
+## Request a DAOS Pool Allocation
+
+The first step in using DAOS is to get a DAOS pool, that is a physically allocated dedicated storage space for your project. 
+
+If your project does not have a DAOS pool yet, you can email [support@alcf.anl.gov](mailto:support@alcf.anl.gov) to submit a request with the following information:
 
 * Project Name
 * ALCF User Names
-* Total Space requested (typically 100 TBs++)
+* Total Space requested (typically 100s TB)
 * Justification
 * Preferred pool name
 
-## Modules
+> **Note**: the storage space of a DAOS pool cannot be extended, so make sure to request enough size for your project. 
 
-Please load the `daos` module when using DAOS. This should be done on the login node (UAN) or in the compute node (jobscript):
-
-```
-module use /soft/modulefiles
-module load daos
-```
-
-## Pool
-
-Pool is a dedicated space allocated to your project. Once your pool is allocated for your project space.
-
-Confirm you are able to query the pool via:
-
-```
+Once a pool is allocated for your project space, confirm you are able to query the pool via:
+```bash
 daos pool query <pool_name>
 ```
 
-**Example output:**
-
-```
-daos pool query hacc
-Pool 050b20a3-3fcc-499b-a6cf-07d4b80b04fd, ntarget=640, disabled=0, leader=2, version=131
+Example:
+```bash
+$ daos pool query datascience
+Pool 751f934f-9ab3-4611-b10e-4d2fc9ac0129, ntarget=4096, disabled=32, leader=190, version=67, state=Degraded
+Pool health info:
+- Rebuild done, 0 objs, 0 recs
 Pool space info:
-- Target(VOS) count:640
+- Target(VOS) count:4064
 - Storage tier 0 (SCM):
-Total size: 6.0 TB
-  Free: 4.4 TB, min:6.5 GB, max:7.0 GB, mean:6.9 GB
+  Total size: 3.0 TB
+  Free: 2.6 TB, min:644 MB, max:649 MB, mean:649 MB
 - Storage tier 1 (NVMe):
-  Total size: 200 TB
-  Free: 194 TB, min:244 GB, max:308 GB, mean:303 GB
-Rebuild done, 4 objs, 0 recs
+  Total size: 96 TB
+  Free: 96 TB, min:21 GB, max:24 GB, mean:24 GB
 ```
+
+To check the status of DAOS, use the [DAOS sanity check](https://docs.alcf.anl.gov/aurora/data-management/daos/daos-overview/#daos-sanity-checks) commands.
+
 
 ## DAOS Container
 
-The container is the basic unit of storage. A POSIX container can contain hundreds of millions of files, you can use it to store all of your data. You only need a small set of containers; perhaps just one per major unit of project work is sufficient.
+The container is the basic unit of storage. A POSIX container can contain hundreds of millions of files, you can use it to store all of your data. You only need a small set of containers; usually just one per major unit of project work is sufficient.
 
-There are 3 modes with which we can operate with the DAOS containers
+There are [3 modes](https://docs.alcf.anl.gov/aurora/data-management/daos/daos-overview/#daos-container) with which we can operate with the DAOS containers, in this tutorial we will cover only the POSIX mode.
 
-1. POSIX container POSIX Mode
-2. POSIX Container MPI-IO Mode
-3. DFS container through DAOS APIs.
+To list all containers available in a pool:
+```bash
+daos cont list <pool_name>
+```
 
-   In this tutorial we will cover only the POSIX mode.
+Example
+```bash
+$ daos cont list datascience
+UUID                                 Label      
+----                                 -----      
+64125a7c-4750-4ef1-bd02-af04c8b246a8 LLM-GPT-1T 
+956c7e3c-9c9a-45d3-9b4e-d17e57d04d45 training1  
+22677585-b8f1-4616-b73b-375f91674a94 ior_1      
+d106b9f3-2f78-4699-8f10-dc285d134da5 softwares
+```
 
 ### Create a POSIX container
 
+You can create a container from a login node (recommended) or a compute node. 
+```bash
+DAOS_POOL=datascience
+DAOS_CONT=test_container
+daos container create --type POSIX ${DAOS_POOL} ${DAOS_CONT} --properties rd_fac:1
 ```
-$ DAOS_POOL=datascience
-$ DAOS_CONT=LLM-GPT-1T
-$ daos container create --type POSIX ${DAOS_POOL} ${DAOS_CONT} --properties rd_fac:1
-  Container UUID : 59747044-016b-41be-bb2b-22693333a380
-  Container Label: LLM-GPT-1T   
-  Container Type : POSIX       
-
-Successfully created container 59747044-016b-41be-bb2b-22693333a380
-```
-
-If you prefer a higher data protection and recovery you can `--properties rd_fac:2` and if you don't need data protection and recovery, you can remove `--properties rd_fac:1`. We recommend to have at least `--properties rd_fac:1`.
-
-You can create the container in the login node or in the compute node. It is recommended to create the container once in the login node, test it and use it without recreating again from the compute node.
-
-## DAOS sanity checks
-
-If any of the following command results in an error, then you can confirm DAOS is currently down. 'Out of group or member list' error is an exception and can be safely ignored. This error message will be fixed in the next daos release.
-
-```
-module use /soft/modulefiles
-module load daos
-module unload daos
-daos version
-
-env | grep DRPC
-ps –ef | grep daos
-clush --hostfile ${PBS_NODEFILE} ps –ef | grep agent | grep -vgrep' | dshbak -c #to check on all compute nodes
-export DAOS_POOL=Your_allocated_pool_name
-daos pool query ${DAOS_POOL}
-daos cont list ${DAOS_POOL}
-daos container get-prop $DAOS_POOL $DAOS_CONT
+Example output:
+```bash
+Successfully created container 6e0f0253-8cb3-494b-81df-439e7ba89b75
+  Container UUID : 6e0f0253-8cb3-494b-81df-439e7ba89b75
+  Container Label: test_container                      
+  Container Type : POSIX     
 ```
 
-* Look for messages like `Rebuild busy and state degraded in the daos pool query.`
-* Look for messages like `Health (status) : UNCLEAN in the get prop`
+- If you prefer no data protection and recovery, you can remove `--properties rd_fac:1`. We recommend to have at least `--properties rd_fac:1`.
+- To destroy a container use
+  ```bash
+  daos cont destroy ${DAOS_POOL} ${DAOS_CONT}
+  ```
 
-```
-daos pool autotest $DAOS_POOL_NAME
-daos container check --pool=$DAOS_POOL_NAME --cont=$DAOS_CONT_NAME
-```
+ 
+### Mount a POSIX container on a login node
 
-### Mount a POSIX container
-
-Currently, you must manually mount your container prior to use on any node you are working on. In the future, we hope to automate some of this via additional `qsub` options.
-
-#### To mount a POSIX container on a login node
-
-```
+```bash
 mkdir –p /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT}
-start-dfuse.sh -m /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT} --pool ${DAOS_POOL} --cont ${DAOS_CONT}# To mount
-mount | grepd fuse # To confirm if its mounted
+# To mount
+start-dfuse.sh -m /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT} --pool ${DAOS_POOL} --cont ${DAOS_CONT}
+mount | grep dfuse # To confirm if its mounted
 
-# Mode 1
+# List the content of the container
 ls /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT}
-cd /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT}
-cp ~/temp.txt ~/tmp/${USER}/${DAOS_POOL}/${DAOS_CONT}/
+
+# Copy a file to the container
+echo "hello" > temp.txt
+cp temp.txt /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT}/
 cat /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT}/temp.txt
 
-fusermount3 -u /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT} # To unmount
+# To unmount
+fusermount3 -u /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT} 
 ```
 
-#### To mount a POSIX container on Compute Nodes
+### Mount a POSIX container on all compute nodes
 
 You need to mount the container on all compute nodes.
 
-```
-launch-dfuse.sh ${DAOS_POOL}:${DAOS_CONT}# launched using pdsh on all compute nodes mounted at: /tmp/<pool>/<container>
-mount | grepd fuse# To confirm if its mounted
+```bash
+# Use pdsh to mount the container at /tmp/<pool>/<container> on all compute nodes
+launch-dfuse.sh ${DAOS_POOL}:${DAOS_CONT}
 
+# To confirm it is mounted
+mount | grep dfuse  
 ls /tmp/${DAOS_POOL}/${DAOS_CONT}/
 
-clean-dfuse.sh ${DAOS_POOL}:${DAOS_CONT}# To unmount on all nodes 
+# To unmount on all nodes
+clean-dfuse.sh ${DAOS_POOL}:${DAOS_CONT}  
 ```
 
-DAOS Data mover instruction is provided at [here](https://docs.alcf.anl.gov/aurora/data-management/moving_data_to_aurora/daos_datamover/).
 
 ## Job Submission
 
-The `-l filesystems=daos_user` and `-l daos=daos_user` switch will ensure that DAOS is accessible on the compute nodes.
+Use the following arguments in your `qsub` job submission to ensure that DAOS is accessible on the compute nodes:
 
-Job submission without requesting DAOS:
+- `-l filesystems=daos_user`
+- `-l daos=daos_user`
 
-```
-qsub -l select=1 -l walltime=01:00:00 -A <ProjectName> -k doe -l filesystems=flare -q debug ./pbs_script1.sh or -I
-```
-
-Job submission with DAOS:
-
-```
-qsub -l select=1 -l walltime=01:00:00 -A <ProjectName> -k doe -l filesystems=flare:daos_user -ldaos=daos_user -q debug ./pbs_script1.sh or -I
+Example of an interactive job with DAOS on 2 nodes:
+```bash
+qsub -l filesystems=home:flare:daos_user -l daos=daos_user -l select=2 -l walltime=00:30:00 -A alcf_training -k doe -q aurorabootcamp -I
 ```
 
-Currently, `--no-vni` is required in the `mpiexec` command to use DAOS.
+Use the following arguments in your `mpiexec` command:
 
-## NIC and Core Binding
+- Currently, `--no-vni` is required in the `mpiexec` command to use DAOS.
+- To achieve good performance, set the [NIC and Core Binding](https://docs.alcf.anl.gov/aurora/data-management/daos/daos-overview/#nic-and-core-binding). For 12 PPN, the following binding is recommended: `CPU_BINDING=list:4:9:14:19:20:25:56:61:66:71:74:79`.
 
-Each Aurora compute node has 8 NICs and each DAOS server node has 2 NICs. Each NIC is capable of driving 20-25 GB/s unidirection for data transfer. Every read and write goes over the NIC and hence NIC binding is the key to achieve good performance.
-
-For 12 PPN, the following binding is recommended:
-
-```
-CPU_BINDING1=list:4:9:14:19:20:25:56:61:66:71:74:79
-```
-
-![1739061164462](image/06_DAOS/1739061164462.png)
-
-Currently, `--no-vni` is required in the `mpiexec` command to use DAOS.
-
-```
-#!/bin/bash -x
-#PBS -l select=512
-#PBS -l walltime=01:00:00
-#PBS -A <ProjectName>
-#PBS -q prod
-#PBS -k doe
-#PBS -l filesystems=flare:daos_user
-#PBS -l daos=daos_user
-
-# qsub -l select=512:ncpus=208 -l walltime=01:00:00 -A <ProjectName> -l filesystems=flare:daos_user -l daos=daos_user -q prod ./pbs_script.sh or - I 
-
-# please do not miss -l filesystems=daos_user and -l daos=daos_user in your qsub :'(
-
-export TZ='/usr/share/zoneinfo/US/Central'
-date
-module use /soft/modulefiles
-module load daos
-env | grep DRPC                                     #optional
-ps -ef|grep daos                                    #optional
-clush --hostfile ${PBS_NODEFILE}  'ps -ef|grep agent|grep -v grep'  | dshbak -c  #optional
-DAOS_POOL=datascience
-DAOS_CONT=thundersvm_exp1
-daos pool query ${DAOS_POOL}                        #optional
-daos cont list ${DAOS_POOL}                         #optional
-daos container destroy   ${DAOS_POOL}  ${DAOS_CONT} #optional
-daos container create --type POSIX ${DAOS_POOL}  ${DAOS_CONT} --properties rd_fac:1 
-daos container query     ${DAOS_POOL}  ${DAOS_CONT} #optional
-daos container get-prop  ${DAOS_POOL}  ${DAOS_CONT} #optional
-daos container list      ${DAOS_POOL}               #optional
-launch-dfuse.sh ${DAOS_POOL}:${DAOS_CONT}           # To mount on a compute node 
-
-# mkdir -p /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT}           # To mount on a login node
-# start-dfuse.sh -m /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT}     --pool ${DAOS_POOL} --cont ${DAOS_CONT}  # To mount on a login node
-
-mount|grep dfuse                                    #optional
-ls /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT}           #optional for login node
-ls /tmp/${DAOS_POOL}/${DAOS_CONT}                   #optional for compute node
-
-# cp /lus/flare/projects/CSC250STDM10_CNDA/kaushik/thundersvm/input_data/real-sim_M100000_K25000_S0.836 /tmp/${DAOS_POOL}/${DAOS_CONT} #one time
-# daos filesystem copy --src /lus/flare/projects/CSC250STDM10_CNDA/kaushik/thundersvm/input_data/real-sim_M100000_K25000_S0.836 --dst daos://tmp/${DAOS_POOL}/${DAOS_CONT}  # check https://docs.daos.io/v2.4/testing/datamover/ 
+Check out the script [examples/daos_example/daos_torch.sh](examples/daos_example/daos_torch.sh) for an example on how to use `mpiexec` to save PyTorch tensors to a DAOS container.
 
 
-cd $PBS_O_WORKDIR
-echo Jobid: $PBS_JOBID
-echo Running on nodes `cat $PBS_NODEFILE`
-NNODES=`wc -l < $PBS_NODEFILE`
-RANKS_PER_NODE=12          # Number of MPI ranks per node
-NRANKS=$(( NNODES * RANKS_PER_NODE ))
-echo "NUM_OF_NODES=${NNODES}  TOTAL_NUM_RANKS=${NRANKS}  RANKS_PER_NODE=${RANKS_PER_NODE}"
-CPU_BINDING1=list:4:9:14:19:20:25:56:61:66:71:74:79
 
-export THUN_WS_PROB_SIZE=1024
-export ZE_FLAT_DEVICE_HIERARCHY=COMPOSITE
-export AFFINITY_ORDERING=compact
-export RANKS_PER_TILE=1
-export PLATFORM_NUM_GPU=6
-export PLATFORM_NUM_GPU_TILES=2
+## Additional Resources
 
+- [ALCF Training Video: *Overview of DAOS and Best Practices*](https://www.alcf.anl.gov/support-center/training/overview-daos-and-best-practices)
+- [Official DAOS documentation](https://docs.daos.io/v2.6/overview/architecture/)
+- [Additional information on moving data from/to DAOS](https://docs.alcf.anl.gov/aurora/data-management/moving_data_to_aurora/daos_datamover/).
 
-date 
-LD_PRELOAD=/usr/lib64/libpil4dfs.so mpiexec -np ${NRANKS} -ppn ${RANKS_PER_NODE} --cpu-bind ${CPU_BINDING1}  \
-                                            --no-vni -genvall  thunder/svm_mpi/run/aurora/wrapper.sh thunder/svm_mpi/build_ws1024/bin/thundersvm-train \
-                                            -s 0 -t 2 -g 1 -c 10 -o 1  /tmp/datascience/thunder_1/real-sim_M100000_K25000_S0.836 
-date
-
-clean-dfuse.sh ${DAOS_POOL}:${DAOS_CONT} #to unmount on compute node
-# fusermount3 -u /tmp/${USER}/${DAOS_POOL}/${DAOS_CONT} #to unmount on login node
-```
-
-''''
-
-## Best practices
-
-```
-Check that you requested DAOS 		qsub –l filesystems=daos_user -ldaos=daos_user
-Did you load DAOS module?		module load daos
-Do you have your DAOS pool allocated? 	daos pool query datascience
-Is DAOS client running on all your nodes? ps –ef | grep daos
-Is your container mounted on all nodes?	mount | grep dfuse
-Can you ls in your container?		ls /tmp/${DAOS_POOL}/${DAOS_CONT}
-Did your I/O actually fail?
-What is the health property in your container?	daos container get-prop $DAOS_POOL $DAOS_CONT
-Is your space full? 			Minandmax	daos pool query datascience
-Does your query show failed targets or rebuild in process? daos pool query datascience
-daos pool autotest
-daos container check
-```
+# [NEXT ->](07_data_movement.md)

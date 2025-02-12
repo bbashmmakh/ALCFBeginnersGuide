@@ -1,9 +1,10 @@
 #!/bin/bash -x
-#PBS -l select=512
-#PBS -l walltime=02:00:00
+#PBS -l select=2
+#PBS -l walltime=00:30:00
 #PBS -A Aurora_deployment
 #PBS -q lustre_scaling
 #PBS -k doe
+#PBS -l filesystems=flare
 
 # qsub -l select=512:ncpus=208 -l walltime=02:00:00 -A Aurora_deployment -l filesystems=flare -q lustre_scaling  ./withcopper_aurora_job_script.sh # or - I 
 
