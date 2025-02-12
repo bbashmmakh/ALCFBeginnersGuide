@@ -49,7 +49,7 @@ First we need to create a job script (example: [examples/00_hello_world.sh](exam
 #PBS -l select=1
 #PBS -l walltime=00:30:00
 #PBS -q debug
-#PBS -l filesystems=home
+#PBS -l filesystems=home:flare
 #PBS -A <project-name>
 #PBS -o logs/
 #PBS -e logs/

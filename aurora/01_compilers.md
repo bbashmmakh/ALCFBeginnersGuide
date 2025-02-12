@@ -224,8 +224,11 @@ A set of helper scripts are provided which accept the local MPI rank ID as input
 
 * ALCFBeginnersGuide/aurora/examples/HelperScripts
   * set_affinity_gpu.sh: bind MPI ranks to GPU tile
+    * useful for when running at least 2 MPI ranks per PVC GPU (i.e. 12 MPI ranks per node)
   * set_affinity_gpu_2ccs.sh: bind MPI ranks to 1/2 GPU tile
+    * useful for when running at least 4 MPI ranks per PVC GPU (i.e. 24 MPI ranks per node)
   * set affinity_gpu_4ccs.sh: bind MPI ranks to 1/4 GPU tile
+    * useful for when running at least 8 MPI ranks per PVC GPU (i.e. 48 or 96 MPI ranks per node)
 
 ## Example submission scripts: [`01_example_openmp_affinity.sh`](examples/01_example_openmp_affinity.sh) [`01_example_sycl_affinity.sh`](examples/01_example_sycl_affinity.sh)
 
@@ -270,5 +273,7 @@ ${COMMAND}
 ![example_openmp_affinity](media/01_compilers_openmp_affinity_example.png)
 
 This test code has support for detecting the number of devices available and binding devices to MPI ranks itself. However, in the first example there are 2 MPI ranks sharing the entire GPU (i.e. both tiles). In the second example, the helper script `set_affinity_gpu.sh` only exposes a single GPU tile. The 2 MPI ranks being bound to individual GPU tiles can help to improve performance and share the device.
+
+Note, it will be important to ensure MPI ranks are properly bound to appropriate CPU cores to 1) ensure MPI ranks on each CPU core are bound to the GPU resource closest to it (important for single-node performance) and 2) all NICs are being used in a balanced fashion (important for multi-node performance).
 
 # [NEXT ->](02_a_debugger.md)

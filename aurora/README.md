@@ -32,7 +32,7 @@ Aurora Machine Specs
 * Each Node has:
   * 6 Intel Data Center GPU Max Series GPUs
   * 2 Intel Xeon CPU Max Series processors (52 cores each)
-  * 8 Slignshot 11 fabric endpoints
+  * 8 Slingshot 11 fabric endpoints
 
 
 Additional details on the connectivity and performance characteristics of a single Aurora Exascale Compute Blade (ECB) follows. The GPUs are connected in an all-to-all fashion. There are two sets of three GPUs that have a direct PCIe connection to one of the CPUs. The two CPUs are connected with UPI and each has 512 GB DDR and 128 GB HBM memory. Each CPU is connected to PCIe switch that fans out to 4 Slingshot 11 Network Interface Cards (NICs).

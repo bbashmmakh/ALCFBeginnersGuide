@@ -20,11 +20,11 @@ Checkpoint is essential. We strongly encourage users to be mindful of potential 
 
 ## Getting help to resolve issues
 
-This (Early User Notes and Known Issues)[https://docs.alcf.anl.gov/aurora/known-issues/] page will be updated regularly as Aurora stabilizes.
+This [Early User Notes and Known Issues](https://docs.alcf.anl.gov/aurora/known-issues/) page will be updated regularly as Aurora stabilizes.
 
 There are multiple avenues for getting assistance as users encounter issues. Users are encouraged to discuss issues with their ALCF points-of-contact (e.g. Catalyst team supporting INCITE and ALCC projects). 
 
-The MyALCF (portal)[https://my.alcf.anl.gov/#/dashboard] provides convenient access to project and allocation information, training resources, and user guides.
+The MyALCF [portal](https://my.alcf.anl.gov/#/dashboard) provides convenient access to project and allocation information, training resources, and user guides.
 
-Users are encourage to report isseus to (ALCF Support)[mailto:support@alcf.anl.gov]. It is important to provide job IDs, if you encounter issues while running on the system. Note, a support ticket may need to be created even after discussing with ALCF point-of-contact depending on the nature of the issue.
+Users are encourage to report isseus to [ALCF Support](mailto:support@alcf.anl.gov). It is important to provide job IDs, if you encounter issues while running on the system. Note, a support ticket may need to be created even after discussing with ALCF point-of-contact depending on the nature of the issue.
 
