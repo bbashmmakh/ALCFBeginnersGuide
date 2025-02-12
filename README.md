@@ -10,6 +10,7 @@ If you are new to using supercomputers and/or ALCF systems, this is the starting
 
 We have versions of these steps laid out for each of our systems so please pick the system you wish to begin with and start there:
 
+* [Aurora](aurora/)
 * [Polaris](polaris/)
 * [Crux](crux/) [Coming Soon]
 * [Sophia](sophia/) [Coming Soon]
@@ -54,3 +55,7 @@ Large computer systems typically have _worker_ nodes and _login_ nodes. _login_ 
 These supercomputers occupy a lot of space in the ACLF data center. Here is our staff at the time (2019) in front of [Mira](https://en.wikipedia.org/wiki/Mira_(supercomputer)), an IBM supercomputer, that debuted as the third fastest supercomputer in the world in 2012.
 
 ![Staff-Mira](media/mira_staff.jpg)
+
+And look how the team has grown, standing now in front of Aurora.
+
+![Staff-Aurora](media/aurora_staff.jpg)
