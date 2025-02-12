@@ -602,19 +602,19 @@ jkwack@aurora-uan-0012:~>
 ```
 Open a FireFox brower on your local system, and paste the URL from `vtune-backend`. Find the VTune results on `Project Navigator` pane on the left:
 
-<img src="media/02_b_VTune-example-01.png" alt="VTune_example_01" width="850"/>
+<img src="media/02_b_Vtune-example-01.png" alt="VTune_example_01" width="850"/>
 
 Click the result directory on the `Project Navigator` pane:
-<img src="media/02_b_VTune-example-02.png" alt="VTune_example_02" width="850"/>
+<img src="media/02_b_Vtune-example-02.png" alt="VTune_example_02" width="850"/>
 
 Click the `Graphics` tab to see `Memory Hierarchy Diagram`:
-<img src="media/02_b_VTune-example-03.png" alt="VTune_example_03" width="850"/>
+<img src="media/02_b_Vtune-example-03.png" alt="VTune_example_03" width="850"/>
 
 Click the `Platform` tab:
-<img src="media/02_b_VTune-example-04.png" alt="VTune_example_04" width="850"/>
+<img src="media/02_b_Vtune-example-04.png" alt="VTune_example_04" width="850"/>
 
 Zoom-in timeline of interest:
-<img src="media/02_b_VTune-example-05.png" alt="VTune_example_05" width="850"/>
+<img src="media/02_b_Vtune-example-05.png" alt="VTune_example_05" width="850"/>
 
 
 ### Intel Advisor for kernel-level roofline analysis
