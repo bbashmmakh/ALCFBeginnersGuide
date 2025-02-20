@@ -26,5 +26,5 @@ There are multiple avenues for getting assistance as users encounter issues. Use
 
 The MyALCF [portal](https://my.alcf.anl.gov/#/dashboard) provides convenient access to project and allocation information, training resources, and user guides.
 
-Users are encourage to report isseus to [ALCF Support](mailto:support@alcf.anl.gov). It is important to provide job IDs, if you encounter issues while running on the system. Note, a support ticket may need to be created even after discussing with ALCF point-of-contact depending on the nature of the issue.
+Users are encourage to report issues to [ALCF Support](mailto:support@alcf.anl.gov). It is important to provide job IDs, if you encounter issues while running on the system. Note, a support ticket may need to be created even after discussing with ALCF point-of-contact depending on the nature of the issue.
 
