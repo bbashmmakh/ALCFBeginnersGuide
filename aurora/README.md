@@ -25,7 +25,7 @@ Aurora Machine Specs
   * [HPL](https://top500.org/system/180183/): 1.012 exaflops 
   * [HPL-MxP](https://hpl-mxp.org/results.md): 10.6 exaflops
 * 10,624 Total Nodes
-  * 166 Cabinents
+  * 166 Cabinets
   * 1.36 PB HBM CPU Capacity
   * 10.9 PB DDR5 Capacity
   * 8.16 PB HBM GPU Capacity
