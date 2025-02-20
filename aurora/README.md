@@ -16,7 +16,7 @@ This guide aims to introduce researchers with coding experience on clusters and/
 
 The inside of Aurora again shows the _nodes_ stacked up in each closet along with mechanical equipment to cooling water through the system.
 
-![Aurora-rack](media/aurora1.jpg)
+![Aurora-rack](media/33410D_150_Aurora-front.jpg)
 
 Aurora is an Intel GPU -based system.
 
