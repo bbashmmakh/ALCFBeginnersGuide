@@ -8,7 +8,7 @@ The current plan for Aurora includes weekly maintenance, typically on Mondays. T
 
 ## Scheduling
 
-Similar to other production ALCF systems, Aurora has a tiered scheduling policy whereby larger jobs can request longer maximum walltimes. To help ensure a positive user experience, users and projects are initially restricted to <=2048 nodes until they can demonstrate successful running of their workloads. We very much want to enable teams to leverage the full system to achieve their science goals.
+Similar to other production ALCF systems, Aurora has a tiered scheduling policy ([see queues](https://docs.alcf.anl.gov/aurora/running-jobs-aurora/)) whereby larger jobs can request longer maximum walltimes. To help ensure a positive user experience, users and projects are initially restricted to <=2048 nodes until they can demonstrate successful running of their workloads. We very much want to enable teams to leverage the full system to achieve their science goals.
 
 ## Storage
 
