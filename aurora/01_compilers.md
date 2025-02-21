@@ -13,7 +13,7 @@ This section describes how to compile C/C++ code standalone, with SYCL and OpenM
 * How to compile a C++ code with OpenMP and MPI
 * How to control CPU and GPU affinities in job scripts
 
-# Compiling C/C++ code
+# Compiling C/C++/Fortran code
 
 When you first login to Aurora, there will be a default list of loaded modules (see them with `module list`). This includes the oneAPI suite of compilers, libraries, and tools and Cray MPICH. It is recommend to use the MPI compiler wrappers for building applications:
 - `mpicc` - C compiler (use it like oneAPI `icx` or GNU `gcc`)
