@@ -4,9 +4,11 @@
 #PBS -A alcf_training
 #PBS -q aurorabootcamp
 #PBS -k doe
-#PBS -ldaos=daos_user
+#PBS -l daos=daos_user
+#PBS -l filesystems=flare:home:daos_user
 
 # qsub -l select=512:ncpus=208 -l walltime=01:00:00 -A alcf_training -l filesystems=flare -q debug  -ldaos=daos_user  ./pbs_script.sh or - I 
+cd ${PBS_O_WORKDIR}
 
 export TZ='/usr/share/zoneinfo/US/Central'
 date
