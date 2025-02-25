@@ -7,14 +7,13 @@
 #PBS -l daos=daos_user
 #PBS -l filesystems=home:flare:daos_user
 
-export http_proxy="http://proxy.alcf.anl.gov:3128"                                                                                                                                                                                                                                                                
-export https_proxy="https://proxy.alcf.anl.gov:3128"
+export http_proxy="http://proxy.alcf.anl.gov:3128"                                                                                                         export https_proxy="https://proxy.alcf.anl.gov:3128"
 
 cd ${PBS_O_WORKDIR}
 module use /soft/modulefiles
 module load daos
 DAOS_POOL=alcf_training # change to your allocated pool
-DAOS_CONT=alcf_training_mnist
+DAOS_CONT=alcf_training_mnist_$USER
 # Do the following on logging node if it is not created
 daos cont destroy $DAOS_POOL $DAOS_CONT
 daos cont create --type POSIX ${DAOS_POOL}  ${DAOS_CONT} --properties rd_fac:1
@@ -24,7 +23,7 @@ ls /tmp/${DAOS_POOL}/${DAOS_CONT}                   #optional
 
 # copy data
 mkdir -p /tmp/${DAOS_POOL}/${DAOS_CONT}
-cp -rvf /flare/alcf_training/hzheng/ALCFBeginnersGuide/aurora/examples/daos_example/mnist/data /tmp/${DAOS_POOL}/${DAOS_CONT}/data
+cp -rvf /flare/alcf_training/hzheng/ALCFBeginnersGuide/aurora/examples/daos_example/2_mnist/data /tmp/${DAOS_POOL}/${DAOS_CONT}/data
 ls /tmp/${DAOS_POOL}/${DAOS_CONT}/data*
 
 NNODES=`cat $PBS_NODEFILE | uniq | wc -l`

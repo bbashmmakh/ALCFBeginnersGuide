@@ -1,8 +1,8 @@
-#!/bin/bash -x
-#PBS -l select=1
+#!/bin/bash 
+#PBS -l select=2
 #PBS -l walltime=01:00:00
 #PBS -A alcf_training
-#PBS -q debug
+#PBS -q aurorabootcamp
 #PBS -k doe
 #PBS -ldaos=daos_user
 
@@ -16,7 +16,7 @@ env | grep DRPC                                     #optional
 ps -ef|grep daos                                    #optional
 clush --hostfile ${PBS_NODEFILE}  'ps -ef|grep agent|grep -v grep'  | dshbak -c  #optional
 DAOS_POOL=alcf_training # change to your allocated pool
-DAOS_CONT=ior_1
+DAOS_CONT=ior_$USER
 daos pool query ${DAOS_POOL}                        #optional
 daos cont list ${DAOS_POOL}                         #optional
 daos container destroy   ${DAOS_POOL}  ${DAOS_CONT} #optional
@@ -35,7 +35,7 @@ export PATH=/lus/flare/projects/alcf_training/softwares/ior/install/bin:$PATH
 cd $PBS_O_WORKDIR
 echo Jobid: $PBS_JOBID
 echo Running on nodes `cat $PBS_NODEFILE`
-NNODES=`wc -l < $PBS_NODEFILE`
+NNODES=`cat $PBS_NODEFILE | uniq | wc -l`
 RANKS_PER_NODE=12          # Number of MPI ranks per node
 NRANKS=$(( NNODES * RANKS_PER_NODE ))
 echo "NUM_OF_NODES=${NNODES}  TOTAL_NUM_RANKS=${NRANKS}  RANKS_PER_NODE=${RANKS_PER_NODE}"
@@ -51,16 +51,17 @@ CPU_BINDING1=list:4:9:14:19:20:25:56:61:66:71:74:79
 
 # With Lustre Posix
 echo -e "\n With Lustre Posix \n"
-lfs getstripe .
-mpiexec -np ${NRANKS} -ppn ${RANKS_PER_NODE} --cpu-bind ${CPU_BINDING1} --no-vni -genvall ior -a posix -b 1G -t 1M -w -r -i 5 -v -C -e -k -o /lus/flare/projects/alcf_training/daos_examples/out_file_on_lus_posix.dat 
-lfs getstripe /lus/flare/projects/alcf_training/daos_examples/out_file_on_lus_posix.dat 
-rm /lus/flare/projects/alcf_training/daos_examples/out_file_on_lus_posix.dat 
+export SCRATCH=/flare/alcf_training/$USER/scratch
+mkdir -p $SCRATCH
+lfs setstripe --stripe-size 16m --stripe-count $SCRATCH
+lfs getstripe $SCRATCH
+mpiexec -np ${NRANKS} -ppn ${RANKS_PER_NODE} --cpu-bind ${CPU_BINDING1} --no-vni -genvall ior -a posix -b 1G -t 1M -w -r -i 5 -v -C -e -k -o ${SCRATCH}/out_file_on_lus_posix.dat 
+rm ${SCRATCH}/out_file_on_lus_posix.dat 
 
 # With Lustre MPIO
 echo -e "\n With Lustre MPIO \n"
-mpiexec -np ${NRANKS} -ppn ${RANKS_PER_NODE} --cpu-bind ${CPU_BINDING1} --no-vni -genvall ior -a mpiio -b 1G -t 1M -w -r -i 5 -v -C -e -k -o /lus/flare/projects/alcf_training/daos_examples/out_file_on_lus_mpiio.dat 
-lfs getstripe /lus/flare/projects/alcf_training/daos_examples/out_file_on_lus_posix.dat 
-rm /lus/flare/projects/alcf_training/daos_examples/out_file_on_lus_posix.dat 
+mpiexec -np ${NRANKS} -ppn ${RANKS_PER_NODE} --cpu-bind ${CPU_BINDING1} --no-vni -genvall ior -a mpiio -b 1G -t 1M -w -r -i 5 -v -C -e -k -o ${SCRATCH}/out_file_on_lus_mpiio.dat 
+rm ${SCRATCH}/out_file_on_lus_posix.dat 
  
 
 
