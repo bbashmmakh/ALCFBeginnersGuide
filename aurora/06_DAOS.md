@@ -194,7 +194,7 @@ Use the following arguments in your `mpiexec` command:
 - Currently, `--no-vni` is required in the `mpiexec` command to use DAOS.
 - To achieve good performance, set the [NIC and Core Binding](https://docs.alcf.anl.gov/aurora/data-management/daos/daos-overview/#nic-and-core-binding). For 12 PPN, the following binding is recommended: `CPU_BINDING=list:4:9:14:19:20:25:56:61:66:71:74:79`.
 
-Check out the script [examples/daos_example/daos_torch.sh](examples/daos_example/daos_torch.sh) for an example on how to use `mpiexec` to save PyTorch tensors to a DAOS container.
+Check out the script [examples/daos_example/2_mnist](examples/daos_example/2_mnist) for an example on how to use `mpiexec` to save PyTorch tensors to a DAOS container.
 
 
 
