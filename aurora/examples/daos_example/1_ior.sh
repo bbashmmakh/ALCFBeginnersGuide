@@ -1,12 +1,12 @@
 #!/bin/bash -x
 #PBS -l select=1
 #PBS -l walltime=01:00:00
-#PBS -A datascience
+#PBS -A alcf_training
 #PBS -q debug
 #PBS -k doe
 #PBS -ldaos=daos_user
 
-# qsub -l select=512:ncpus=208 -l walltime=01:00:00 -A datascience -l filesystems=flare -q debug  -ldaos=daos_user  ./pbs_script.sh or - I 
+# qsub -l select=512:ncpus=208 -l walltime=01:00:00 -A alcf_training -l filesystems=flare -q debug  -ldaos=daos_user  ./pbs_script.sh or - I 
 
 export TZ='/usr/share/zoneinfo/US/Central'
 date
@@ -15,7 +15,7 @@ module load daos
 env | grep DRPC                                     #optional
 ps -ef|grep daos                                    #optional
 clush --hostfile ${PBS_NODEFILE}  'ps -ef|grep agent|grep -v grep'  | dshbak -c  #optional
-DAOS_POOL=datascience # change to your allocated pool
+DAOS_POOL=alcf_training # change to your allocated pool
 DAOS_CONT=ior_1
 daos pool query ${DAOS_POOL}                        #optional
 daos cont list ${DAOS_POOL}                         #optional
