@@ -55,7 +55,7 @@ CPU_BINDING1=list:4:9:14:19:20:25:56:61:66:71:74:79
 echo -e "\n With Lustre Posix \n"
 export SCRATCH=/flare/alcf_training/$USER/scratch
 mkdir -p $SCRATCH
-lfs setstripe --stripe-size 16m --stripe-count $SCRATCH
+lfs setstripe -S 16m -c 128 $SCRATCH
 lfs getstripe $SCRATCH
 mpiexec -np ${NRANKS} -ppn ${RANKS_PER_NODE} --cpu-bind ${CPU_BINDING1} --no-vni -genvall ior -a posix -b 1G -t 1M -w -r -i 5 -v -C -e -k -o ${SCRATCH}/out_file_on_lus_posix.dat 
 rm ${SCRATCH}/out_file_on_lus_posix.dat 
